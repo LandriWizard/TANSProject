@@ -2,7 +2,7 @@
 #include "TTree.h"
 #include "TBranch.h"
 #include "TMath.h"
-#include "Punto.h"
+#include "MyPoint.h"
 #include "TClonesArray.h"
 #include "Riostream.h"
 #include "TRandom3.h"
@@ -16,7 +16,7 @@ void GeneraTree(){
   // tree->SetDirectory(&hfile);
 
   // Dichiarazione di un TClonesArray
-  TClonesArray *ptrhits = new TClonesArray("Punto",100);
+  TClonesArray *ptrhits = new TClonesArray("MyPoint",100);
   TClonesArray &hits = *ptrhits;
    
   // Definizione di una struct
@@ -46,7 +46,7 @@ void GeneraTree(){
     for (int j=0; j<numpart; j++){
 
       // Genero un hit in modo del tutto random (dummy)
-      new(hits[j])Punto(-5.+gRandom->Rndm()*10.,5.+gRandom->Rndm()*10,15.+gRandom->Rndm()*10.);
+      new(hits[j])MyPoint(-5.+gRandom->Rndm()*10.,5.+gRandom->Rndm()*10,15.+gRandom->Rndm()*10.);
     }
 
     // Debug
@@ -54,8 +54,8 @@ void GeneraTree(){
     printf("x= %f ; y= %f; z= %f \n",point.X,point.Y,point.Z);
     printf("Entries nel TClonesArray: %d\n",ptrhits->GetEntries());
     for (int j=0; j<hits.GetEntries(); j++){
-      Punto *tst=(Punto*)ptrhits->At(j);
-      cout<<"Punto "<<j<<") x, y, z = "<<tst->GetX()<<"; "<<tst->GetY()<<"; "<<tst->GetZ()<<endl;
+      MyPoint *tst=(MyPoint*)ptrhits->At(j);
+      std::cout<<"MyPoint "<<j<<") x, y, z = "<<tst->GetX()<<"; "<<tst->GetY()<<"; "<<tst->GetZ()<<std::endl;
     }
     // fine del debug
 
