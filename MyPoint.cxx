@@ -22,6 +22,14 @@ MyPoint::MyPoint(double X, double Y, double Z):TObject(),
 	//standard constructor 
 }	     
 
+MyPoint::MyPoint(const MyPoint& source):TObject(source)
+{
+  dmX = source.dmX;
+  dmY = source.dmY;
+  dmZ = source.dmZ;
+  //copy constructor  
+}
+
 //___________________________________________________________________________
 MyPoint::~MyPoint()	 {
   // destructor
