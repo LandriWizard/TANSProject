@@ -7,18 +7,18 @@ ClassImp(MyPoint)
 
 //________________________________________________________________________
 MyPoint::MyPoint():TObject(),
- fX(0.),
- fY(0.),
- fZ(0.){
+ dmX(0.),
+ dmY(0.),
+ dmZ(0.){
    // default constructor
  }
 
 
 //___________________________________________________________________________
 MyPoint::MyPoint(double X, double Y, double Z):TObject(),
- fX(X),
- fY(Y),
- fZ(Z){
+ dmX(X),
+ dmY(Y),
+ dmZ(Z){
 	//standard constructor 
 }	     
 

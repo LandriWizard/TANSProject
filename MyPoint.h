@@ -13,17 +13,17 @@ MyPoint(double X, double Y, double Z);
 
 virtual ~MyPoint();
 
- double GetX() const {return fX;} 
- double GetY() const {return fY;}
- double GetZ() const {return fZ;}
+double GetX() const {return dmX;} 
+double GetY() const {return dmY;}
+double GetZ() const {return dmZ;}
 
 
 private:
 
 
-double fX;
-double fY;
-double fZ;
+double dmX;
+double dmY;
+double dmZ;
 
 ClassDef(MyPoint,1)
 };
