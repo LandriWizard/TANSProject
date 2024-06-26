@@ -22,6 +22,7 @@ MyPoint::MyPoint(double X, double Y, double Z):TObject(),
 	//standard constructor 
 }	     
 
+//___________________________________________________________________________
 MyPoint::MyPoint(const MyPoint& source):TObject(source)
 {
   dmX = source.dmX;
@@ -33,4 +34,13 @@ MyPoint::MyPoint(const MyPoint& source):TObject(source)
 //___________________________________________________________________________
 MyPoint::~MyPoint()	 {
   // destructor
+}
+
+//___________________________________________________________________________
+MyPoint& MyPoint::operator=(const MyPoint& source){
+  if(this == &source) return *this;
+  this->~MyPoint();
+  new(this) MyPoint(source);
+  return *this;
+  //= operator
 }
