@@ -10,20 +10,22 @@ public:
 
 MyPoint();
 MyPoint(double X, double Y, double Z);
+MyPoint(const MyPoint& source);
+MyPoint& operator=(const MyPoint& source);		
+
 
 virtual ~MyPoint();
 
-double GetX() const {return dmX;}; 
-double GetY() const {return dmY;};
-double GetZ() const {return dmZ;};
+double GetX() const {return dmX;} 
+double GetY() const {return dmY;}
+double GetZ() const {return dmZ;}
 
-double SetX(double x) {dmX = x;};
-double SetY(double y) {dmY = y;};
-double SetZ(double z) {dmZ = z;};
+void SetX(double x) {dmX = x;}
+void SetY(double y) {dmY = y;}
+void SetZ(double z) {dmZ = z;}
 
 
 private:
-
 
 double dmX;
 double dmY;
