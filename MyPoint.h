@@ -13,9 +13,13 @@ MyPoint(double X, double Y, double Z);
 
 virtual ~MyPoint();
 
-double GetX() const {return dmX;} 
-double GetY() const {return dmY;}
-double GetZ() const {return dmZ;}
+double GetX() const {return dmX;}; 
+double GetY() const {return dmY;};
+double GetZ() const {return dmZ;};
+
+double SetX(double x) {dmX = x;};
+double SetY(double y) {dmY = y;};
+double SetZ(double z) {dmZ = z;};
 
 
 private:
