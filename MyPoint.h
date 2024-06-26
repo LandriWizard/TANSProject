@@ -6,31 +6,31 @@
 class MyPoint : public TObject
 {
 
-public:
+  public:
 
-  MyPoint();
-  MyPoint(double X, double Y, double Z);
-  MyPoint(const MyPoint& source);
-  MyPoint& operator=(const MyPoint& source);		
+    MyPoint();
+    MyPoint(double X, double Y, double Z);
+    MyPoint(const MyPoint& source);
+    MyPoint& operator=(const MyPoint& source);		
 
-  virtual ~MyPoint();
+    virtual ~MyPoint();
 
-  double GetX() const {return dmX;} 
-  double GetY() const {return dmY;}
-  double GetZ() const {return dmZ;}
+    double GetX() const {return dmX;} 
+    double GetY() const {return dmY;}
+    double GetZ() const {return dmZ;}
 
-  void SetX(double x) {dmX = x;}
-  void SetY(double y) {dmY = y;}
-  void SetZ(double z) {dmZ = z;}
+    void SetX(double x) {dmX = x;}
+    void SetY(double y) {dmY = y;}
+    void SetZ(double z) {dmZ = z;}
 
 
-private:
+  private:
 
-  double dmX;
-  double dmY;
-  double dmZ;
+    double dmX;
+    double dmY;
+    double dmZ;
 
-ClassDef(MyPoint,1)
+  ClassDef(MyPoint,1)
 };
 
 
