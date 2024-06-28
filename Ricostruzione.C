@@ -2,7 +2,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TBranch.h"
-#include "Punto.h"
+#include "MyPoint.h"
 #include "TMath.h"
 #include "TClonesArray.h"
 
