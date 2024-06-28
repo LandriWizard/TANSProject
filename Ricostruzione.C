@@ -5,6 +5,7 @@
 #include "MyPoint.h"
 #include "TMath.h"
 #include "TClonesArray.h"
+//using namespace std;
 
 void LeggiTree(){
   // definizione struct
@@ -13,7 +14,7 @@ void LeggiTree(){
     int mult;} VTX;
   static VTX point;
   // Dichiarazione TClonesArray
-  TClonesArray *hits = new TClonesArray("Punto",100);
+  TClonesArray *hits = new TClonesArray("MyPoint",100);
   //Apertura file di input
   TFile hfile("htree.root");
   //Lettura TTree  e branch
@@ -23,18 +24,18 @@ void LeggiTree(){
 
   // Definizione degli indirizzi per la lettura dei dati su ttree
   b1->SetAddress(&point.X);
-  b2->SetAddress( s);
+//  b2->SetAddress(*s);
 
   // loop sugli ingressi nel TTree
   for(int ev=0;ev<tree->GetEntries();ev++){
     tree->GetEvent(ev);
-    cout<<"Evento "<<ev<<"; Molteplicita= "<<point.mult<<endl;
-    cout<<"X,Y,Z = "<<point.X<<"; "<<point.Y<<"; "<<point.Z<<endl;
+    std::cout<<"Evento "<<ev<<"; Molteplicita= "<<point.mult<<std::endl;
+    std::cout<<"X,Y,Z = "<<point.X<<"; "<<point.Y<<"; "<<point.Z<<std::endl;
     int num=hits->GetEntries();
-    cout<<"Numero di elementi nel TClonesArray "<<num<<endl;
+    std::cout<<"Numero di elementi nel TClonesArray "<<num<<std::endl;
     for (int j=0; j<num; j++){
-      Punto *tst=(Punto*)hits->At(j);
-      cout<<"Punto "<<j<<") x, y, z = "<<tst->GetX()<<"; "<<tst->GetY()<<"; "<<tst->GetZ()<<endl;
+      MyPoint *tst=(MyPoint*)hits->At(j);
+      std::cout<<"MyPoint "<<j<<") x, y, z = "<<tst->GetX()<<"; "<<tst->GetY()<<"; "<<tst->GetZ()<<std::endl;
     }
   }
  
