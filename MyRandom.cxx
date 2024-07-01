@@ -7,15 +7,25 @@ ClassImp(MyRandom)
 // Class used to generate random numbers //
 ///////////////////////////////////////////
 
-//-----------------------------------------------------------//
+bool MyRandom::dmFileFlag = false;
+
+//___________________________________________________________________________
 MyRandom::MyRandom(): TRandom3(),
-  dmMult(0){
+  dmMult(NULL){
   //Default constructor
 }
 
-//-----------------------------------------------------------//
-MyRandom::MyRandom(const char* input_file,unsigned int seed): TRandom3(seed),
-  dmMult(){
+//___________________________________________________________________________
+MyRandom::MyRandom(const char* input_file,unsigned int seed): TRandom3(seed)
+{
+  TFile infile(input_file);
+  if(infile.IsZombie()) dmFileFlag = true;
+  else{
+    TH1D* tempMult = (TH1D*)infile.Get("hm");
+    tempMult->SetDirectory(0);
+    infile.Close();
+    dmMult = tempMult;
+  }
   //Standard constructor
 }
 
@@ -27,7 +37,7 @@ MyRandom::MyRandom(const MyRandom& source):TRandom3(source)
 }
 
 
-//-----------------------------------------------------------//
+//___________________________________________________________________________
 MyRandom::~MyRandom()
 {
   //Default destructor
@@ -41,3 +51,4 @@ MyRandom& MyRandom::operator=(const MyRandom& source){
   return *this;
   //= operator
 }
+

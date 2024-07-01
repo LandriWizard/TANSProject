@@ -4,12 +4,16 @@
 
 
 ClassImp(MyVertex)
+///////////////////////////////////////////
+//  Class containing any kind of vertex  //
+///////////////////////////////////////////
+
 
 //________________________________________________________________________
 MyVertex::MyVertex():MyPoint(),
  dmPoint(NULL),
  dmMult(0){
-   // default constructor
+   //default constructor
  }
 
 
@@ -31,7 +35,7 @@ MyVertex::MyVertex(const MyVertex& source):MyPoint(source)
 
 //___________________________________________________________________________
 MyVertex::~MyVertex()	 {
-  // destructor
+  //destructor
 }
 
 //___________________________________________________________________________
