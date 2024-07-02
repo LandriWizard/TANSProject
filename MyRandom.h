@@ -5,6 +5,8 @@
 #include <TH1D.h>
 #include <TRandom3.h>
 
+#include "MyVertex.h"
+
 class MyRandom : public TRandom3 {
 //////////////////////////////////////////
 //  Class for random number generators  //
@@ -17,7 +19,10 @@ class MyRandom : public TRandom3 {
     virtual ~MyRandom();
     MyRandom& operator=(const MyRandom& source);
 
-    int RandMult(int) {return (int) dmMult->GetRandom();}
+//    int RndmMult(int) {return (int) dmMult->GetRandom();}
+
+    int RndmMult();
+    double RndmTheta();
 
     static bool GetFlag() {return dmFileFlag;}
 
@@ -25,7 +30,7 @@ class MyRandom : public TRandom3 {
     static bool dmFileFlag; //Flag for the existence of input_file; TRUE if input_file does not exist
 
     TH1D* dmMult;
-
+    TH1D* dmEta;
 
 };
 #endif
