@@ -17,7 +17,7 @@
 
 using namespace std;
 
-//IMPORTANT: DISTANCES ARE MEASURED IN METRES IN THIS SIMULATION
+//IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
 
 void Test(int N_exp = 2, unsigned int seed = 69420, const char* input_file = "kinem.root"){
 
@@ -86,13 +86,13 @@ void Test(int N_exp = 2, unsigned int seed = 69420, const char* input_file = "ki
 
   MyPoint* Hit = new MyPoint(); //Points used to store the true position of where the particles hit the detectors
   MyParticle* Particle = new MyParticle();
-  MyPhysics BeamPipe(0.03,0.52);
+  MyPhysics BeamPipe(.03,.52);
 
   for(int i = 0; i < N_exp; i++){
     //Vertex generation
-    Point->SetX(RndmPtr->Gaus(0.,0.053));
-    Point->SetY(RndmPtr->Gaus(0.,0.0001));
-    Point->SetZ(RndmPtr->Gaus(0.,0.0001));
+    Point->SetX(RndmPtr->Gaus(0.,.0001));
+    Point->SetY(RndmPtr->Gaus(0.,.0001));
+    Point->SetZ(RndmPtr->Gaus(0.,.053));
     Vertex->SetPoint(Point);
     Vertex->SetMult(RndmPtr->RndmMult());
 
