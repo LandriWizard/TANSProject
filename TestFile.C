@@ -118,7 +118,8 @@ void Test(int N_exp = 2, unsigned int seed = 69420, const char* input_file = "ki
       MyPoint* tmpPoint = new MyPoint();
       tmpPoint = Vertex->GetPoint();
       tmpPoint->SetZ(0.);
-      *Hit = BeamPipe.Hit(tmpPoint, Particle);
+      cout << tmpPoint->GetZ() << endl;
+      *Hit = BeamPipe.Hit(Vertex->GetPoint(), Particle);
 
       #if DEBUG == TRUE
         cout << "Hit position on the beam pipe = (" << Hit->GetX() << ", " <<

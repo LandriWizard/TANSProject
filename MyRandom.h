@@ -19,8 +19,6 @@ class MyRandom : public TRandom3 {
     virtual ~MyRandom();
     MyRandom& operator=(const MyRandom& source);
 
-//    int RndmMult(int) {return (int) dmMult->GetRandom();}
-
     int RndmMult();
     double RndmTheta();
 

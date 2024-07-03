@@ -8,7 +8,8 @@ void LibraryCompiler() {
   gROOT->LoadMacro("MyPoint.cxx");
   gROOT->LoadMacro("MyVertex.cxx");
   gROOT->LoadMacro("MyRandom.cxx");
-
+  gROOT->LoadMacro("MyParticle.cxx");
+  gROOT->LoadMacro("MyPhysics.cxx");
 
 
 }
