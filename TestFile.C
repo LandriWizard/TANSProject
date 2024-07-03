@@ -86,7 +86,9 @@ void Test(int N_exp = 2, unsigned int seed = 69420, const char* input_file = "ki
 
   MyPoint* Hit = new MyPoint(); //Points used to store the true position of where the particles hit the detectors
   MyParticle* Particle = new MyParticle();
-  MyPhysics BeamPipe(.03,.52);
+  MyPhysics BeamPipe(.03,.54);
+  MyPhysics Layer1(.04,.27);
+  MyPhysics Layer2(.07,.27);
 
   for(int i = 0; i < N_exp; i++){
     //Vertex generation
@@ -120,7 +122,6 @@ void Test(int N_exp = 2, unsigned int seed = 69420, const char* input_file = "ki
       tmpPoint->SetZ(0.);
       cout << tmpPoint->GetZ() << endl;
       *Hit = BeamPipe.Hit(Vertex->GetPoint(), Particle);
-
       #if DEBUG == TRUE
         cout << "Hit position on the beam pipe = (" << Hit->GetX() << ", " <<
                                                        Hit->GetY() << ", " <<
@@ -128,6 +129,30 @@ void Test(int N_exp = 2, unsigned int seed = 69420, const char* input_file = "ki
                                                        TMath::Sqrt(Hit->GetX()*Hit->GetX() + 
                                                                    Hit->GetY()*Hit->GetY()) << endl;
       #endif
+
+
+      //First layer interaction
+      *Hit = Layer1.Hit(Hit, Particle);
+      #if DEBUG == TRUE
+        cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
+                                                                  Hit->GetY() << ", " <<
+                                                                  Hit->GetZ() << "); Radius of the position = " << 
+                                                                  TMath::Sqrt(Hit->GetX()*Hit->GetX() + 
+                                                                              Hit->GetY()*Hit->GetY()) << endl;
+      #endif
+
+      //Second layer interaction
+      *Hit = Layer2.Hit(Hit, Particle);
+      #if DEBUG == TRUE
+        cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
+                                                                  Hit->GetY() << ", " <<
+                                                                  Hit->GetZ() << "); Radius of the position = " << 
+                                                                  TMath::Sqrt(Hit->GetX()*Hit->GetX() + 
+                                                                              Hit->GetY()*Hit->GetY()) << endl;
+      #endif
+
+//DA FARE: SALVARE GLI HIT SUI DUE LAYER SU UN QUALCHE CONTAINER (TTREE? TCLONESARRAY?) E PROVARE A FARE
+//UNA RUDIMENTALE RICOSTRUZIONE, SERVE LO SMEARING!!
 
     }
   }
