@@ -49,8 +49,8 @@ MyPoint MyPhysics::Hit(MyPoint* Point, MyParticle* Particle){
   double c3 = TMath::Cos(Particle->GetTheta());
 
   double delta = (x0*c1 + y0*c2)*(x0*c1 + y0*c2) - (c1*c1 + c2*c2)*(x0*x0 + y0*y0 - dmR*dmR);
-  double tminus = (-(x0*c1 - y0*c2) - TMath::Sqrt(delta))/(c1*c1 + c2*c2);
-  double tplus = (-(x0*c1 - y0*c2) + TMath::Sqrt(delta))/(c1*c1 + c2*c2);
+  double tminus = (-(x0*c1 + y0*c2) - TMath::Sqrt(delta))/(c1*c1 + c2*c2);
+  double tplus = (-(x0*c1 + y0*c2) + TMath::Sqrt(delta))/(c1*c1 + c2*c2);
 
   double t;
   if(tplus > 0.) t = tplus;
