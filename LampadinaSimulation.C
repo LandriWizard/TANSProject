@@ -3,9 +3,6 @@
 #include "TClonesArray.h"
 #include "TFile.h"
 #include "TMath.h"
-
-#include "TLeaf.h"
-
 #include "TTree.h"
 
 #include "MyParticle.h"
@@ -22,7 +19,7 @@ using namespace std;
 
 //IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
 
-void Simulation(int N_exp = 1e6, unsigned int seed = 69420, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1, unsigned int seed = 69420, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -46,8 +43,8 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, const char* input_fi
 
 
   Tree->Branch("VertMult",&Vertex);
-  Tree->Branch("Hits on Layer 1",&HitsOnL1);
-  Tree->Branch("Hits on Layer 2",&HitsOnL2);
+  Tree->Branch("HitsL1",&HitsOnL1);
+  Tree->Branch("HitsL2",&HitsOnL2);
 
   Tree->SetAutoSave(0);
 
