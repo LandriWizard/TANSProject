@@ -11,15 +11,13 @@ ClassImp(MyVertex)
 
 //________________________________________________________________________
 MyVertex::MyVertex():MyPoint(),
- dmPoint(NULL),
- dmMult(0){
+  dmMult(0){
    //default constructor
  }
 
 
 //___________________________________________________________________________
-MyVertex::MyVertex(MyPoint* Point, int mult):MyPoint(),
- dmPoint(Point),
+MyVertex::MyVertex(double X, double Y, double Z, int mult):MyPoint(),
  dmMult(mult){
 	//standard constructor 
 }	     
@@ -27,7 +25,6 @@ MyVertex::MyVertex(MyPoint* Point, int mult):MyPoint(),
 //___________________________________________________________________________
 MyVertex::MyVertex(const MyVertex& source):MyPoint(source)
 {
-  dmPoint = source.dmPoint;
   dmMult = source.dmMult;
   //copy constructor  
 }

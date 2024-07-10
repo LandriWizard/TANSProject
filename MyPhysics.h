@@ -20,5 +20,7 @@ class MyPhysics : public TObject{
     double dmR; //SQRT(X^2+Y^2)
     double dmH; //Lenght of the detectors
 
+  ClassDef(MyPhysics,1)
+
 };
 #endif

@@ -56,9 +56,9 @@ MyPoint MyPhysics::Hit(MyPoint* Point, MyParticle* Particle){
   if(tplus > 0.) t = tplus;
   else t = tminus;
 
-  std::cout << "Delta = " << delta << ";" << std::endl;
-  std::cout << "Radius of the hitted object = " << dmR << ";" << std::endl;
-  std::cout << "t_minus = " << tminus << ", t_plus = " << tplus << ", t = " << t << ";" << std::endl; 
+//  std::cout << "Delta = " << delta << ";" << std::endl;
+//  std::cout << "Radius of the hitted object = " << dmR << ";" << std::endl;
+//  std::cout << "t_minus = " << tminus << ", t_plus = " << tplus << ", t = " << t << ";" << std::endl; 
 
   double x = x0 + c1*t;
   double y = y0 + c2*t;

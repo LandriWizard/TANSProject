@@ -1,4 +1,5 @@
 #include "TObject.h"
+#include "TMath.h"
 #include "MyPoint.h"
 
 
@@ -43,4 +44,9 @@ MyPoint& MyPoint::operator=(const MyPoint& source){
   new(this) MyPoint(source);
   return *this;
   //= operator
+}
+
+//___________________________________________________________________________
+double MyPoint::GetRadius() const {
+  return TMath::Sqrt(dmX*dmX + dmY*dmY);
 }

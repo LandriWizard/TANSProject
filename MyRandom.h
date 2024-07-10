@@ -30,5 +30,7 @@ class MyRandom : public TRandom3 {
     TH1D* dmMult;
     TH1D* dmEta;
 
+  ClassDef(MyRandom,1)
+
 };
 #endif
