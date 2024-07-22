@@ -3,23 +3,25 @@
 #include "TClonesArray.h"
 #include "TFile.h"
 #include "TMath.h"
+#include "TStopwatch.h"
 #include "TTree.h"
 
 #include "MyParticle.h"
 #include "MyPhysics.h"
 #include "MyPoint.h"
 #include "MyRandom.h"
+#include "MySignal.h"
 #include "MyVertex.h"
 
 #define TRUE 1
 #define FALSE 0
-#define DEBUG FALSE
+#define DEBUG TRUE
 
 using namespace std;
 
 //IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
 
-void Simulation(int N_exp = 1, unsigned int seed = 69420, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e2, unsigned int seed = 69420, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -27,15 +29,24 @@ void Simulation(int N_exp = 1, unsigned int seed = 69420, const char* input_file
   if(RndmPtr->GetFlag()) cout << "There is no file named " << input_file << " in the chosen directory" << endl;
   else cout << "File " << input_file << " was found, beginning the operations" << endl;
 
+//Stopwatch declaration and start
+  TStopwatch Clock;
+  Clock.Start();
+
+//Output file declaration
   TFile hfile(output_file,"RECREATE");
 
   double X,Y,Z;
   int mult;
 
   TTree* Tree = new TTree("T","Tree with 3 branches");
-  TClonesArray* HitsOnL1 = new TClonesArray("MyPoint",100);
+//  TClonesArray* HitsOnL1 = new TClonesArray("MyPoint",100);
+//  TClonesArray& L1Hit = *HitsOnL1;
+//  TClonesArray* HitsOnL2 = new TClonesArray("MyPoint",100);
+//  TClonesArray& L2Hit = *HitsOnL2;
+  TClonesArray* HitsOnL1 = new TClonesArray("MySignal",100);
   TClonesArray& L1Hit = *HitsOnL1;
-  TClonesArray* HitsOnL2 = new TClonesArray("MyPoint",100);
+  TClonesArray* HitsOnL2 = new TClonesArray("MySignal",100);
   TClonesArray& L2Hit = *HitsOnL2;
 
   MyPoint* Point = new MyPoint();
@@ -54,6 +65,7 @@ void Simulation(int N_exp = 1, unsigned int seed = 69420, const char* input_file
   MyPoint* Hit = new MyPoint(); //Points used to store the true position of where the particles hit the detectors
   MyParticle* Particle = new MyParticle();
   MyPhysics BeamPipe(3.,54.);
+
   MyPhysics Layer1(4.,27.);
   MyPhysics Layer2(7.,27.);
 
@@ -70,13 +82,14 @@ void Simulation(int N_exp = 1, unsigned int seed = 69420, const char* input_file
     mult = Vertex->GetMult();
 
     #if DEBUG == TRUE
-      cout << "Generated vertex #" << i << " = (" << Vertex->GetPoint()->GetX() << ", " <<
-                                                     Vertex->GetPoint()->GetY() << ", " <<
-                                                     Vertex->GetPoint()->GetZ() << ");" << endl;
+      cout << "Generated vertex #" << i << " = (" << Vertex->GetX() << ", " <<
+                                                     Vertex->GetY() << ", " <<
+                                                     Vertex->GetZ() << ");" << endl;
       cout << "Random multiplicity = " << mult << ";" << endl;
     #endif
 
     //Multiplicity loop
+    int j1 = 0, j2 = 0; //Indices used to save hits when the z is actually on the detector
     for(int j = 0; j < mult; j++){
       //Particle generation
       Particle->SetTheta(RndmPtr->RndmTheta());
@@ -97,7 +110,8 @@ void Simulation(int N_exp = 1, unsigned int seed = 69420, const char* input_file
 
       //First layer interaction
       *Hit = Layer1.Hit(Hit, Particle);
-      new(L1Hit[j])MyPoint(Hit->GetX(),Hit->GetY(),Hit->GetZ());
+//      new(L1Hit[j])MyPoint(Hit->GetX(),Hit->GetY(),Hit->GetZ());
+      new(L1Hit[j1])MySignal(Hit);
       #if DEBUG == TRUE
         cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
                                                                   Hit->GetY() << ", " <<
@@ -105,29 +119,41 @@ void Simulation(int N_exp = 1, unsigned int seed = 69420, const char* input_file
                                                                   Hit->GetRadius() << endl;
       #endif
 
-      //Second layer interaction
-      *Hit = Layer2.Hit(Hit, Particle);
-      new(L2Hit[j])MyPoint(Hit->GetX(),Hit->GetY(),Hit->GetZ());
+      if(Hit->GetZ() > -Layer1.GetH()/2. && Hit->GetZ() < Layer1.GetH()/2.){  //NB CON QUESTO IF CRASHA, CAPIRE PERCHE'
+        //Second layer interaction
+        *Hit = Layer2.Hit(Hit, Particle);
+  //      new(L2Hit[j])MyPoint(Hit->GetX(),Hit->GetY(),Hit->GetZ());
+        new(L2Hit[j2])MySignal(Hit);
+        #if DEBUG == TRUE
+          cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
+                                                                    Hit->GetY() << ", " <<
+                                                                    Hit->GetZ() << "); Radius of the position = " << 
+                                                                    Hit->GetRadius() << endl;
+        #endif
+
+
+
+        #if DEBUG == TRUE
+          printf("Evento %d - moltepl: %d - interazione: %d\n",i,mult,j+1);
+          printf("x= %f ; y= %f; z= %f \n",Vertex->GetX(),Vertex->GetY(),Vertex->GetZ());
+          printf("Entries nel TClonesArray1: %d\n",HitsOnL1->GetEntries());
+          MySignal *tst1=(MySignal*)HitsOnL1->At(j);
+          std::cout<< "Hit on L1 " << j << ") z, phi = " << tst1->GetPhi() << "; " << tst1->GetZ() << std::endl;
+          printf("Entries nel TClonesArray2: %d\n",HitsOnL2->GetEntries());
+          MySignal *tst2=(MySignal*)HitsOnL2->At(j);
+          std::cout << "Hit on L2 " << j << ") z, phi = " << tst2->GetPhi() << "; " << tst2->GetZ() << std::endl;
+        #endif
+
+        j2++;
+
+      }
+
       #if DEBUG == TRUE
-        cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
-                                                                  Hit->GetY() << ", " <<
-                                                                  Hit->GetZ() << "); Radius of the position = " << 
-                                                                  Hit->GetRadius() << endl;
+        printf("j = %d; j1 = %d; j2 = %d\n",j,j1,j2);
       #endif
 
 
-
-      #if DEBUG == TRUE
-        printf("Evento %d - moltepl: %d - interazione: %d\n",i,mult,j+1);
-        printf("x= %f ; y= %f; z= %f \n",Vertex->GetPoint()->GetX(),Vertex->GetPoint()->GetY(),Vertex->GetPoint()->GetZ());
-        printf("Entries nel TClonesArray1: %d\n",HitsOnL1->GetEntries());
-        MyPoint *tst1=(MyPoint*)HitsOnL1->At(j);
-        std::cout<<"Hit on L1 "<<j<<") x, y, z = "<<tst1->GetX()<<"; "<<tst1->GetY()<<"; "<<tst1->GetZ()<<std::endl;
-        printf("Entries nel TClonesArray2: %d\n",HitsOnL2->GetEntries());
-        MyPoint *tst2=(MyPoint*)HitsOnL2->At(j);
-        std::cout<<"Hit on L2 "<<j<<") x, y, z = "<<tst2->GetX()<<"; "<<tst2->GetY()<<"; "<<tst2->GetZ()<<std::endl;
-      #endif
-
+      j1++;
 
     }
 
@@ -141,10 +167,18 @@ void Simulation(int N_exp = 1, unsigned int seed = 69420, const char* input_file
   hfile.Write();
   hfile.Close();
 
+//Stopwatch stop and time print
+  Clock.Stop();
+  Clock.Print();
+
+//Deallocating pointers
+  delete Hit;
+  delete Particle;
 
 //NECESSARIO AGGIUNGERE SMEARING E MULTISCATTERING
 //AGGIUNGERE ANCHE MOTLEPLICITA' FISSA E DA DISTRIBUZIONE UNIFORME
 //OPPORTUNO INIZIARE ANCHE LA RICOSTRUZIONE E L'ESTRAZIONE DELLE COSE DAL TREE
 
+//AGGIUNGERE MYSIGNAL E REGISTRARE I SEGNALI IN TCLONESARRAY DI MYSIGNAL E NON DI MYPOINT, E TESTARE SE MYSIGNAL FUNZIONA
 
 }
