@@ -15,13 +15,13 @@
 
 #define TRUE 1
 #define FALSE 0
-#define DEBUG TRUE
+#define DEBUG FALSE
 
 using namespace std;
 
 //IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
 
-void Simulation(int N_exp = 1e2, unsigned int seed = 69420, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e6, unsigned int seed = 69420, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -91,6 +91,15 @@ void Simulation(int N_exp = 1e2, unsigned int seed = 69420, const char* input_fi
     //Multiplicity loop
     int j1 = 0, j2 = 0; //Indices used to save hits when the z is actually on the detector
     for(int j = 0; j < mult; j++){
+
+      #if DEBUG == TRUE
+        cout << "Indeces at the beginning of the for cycle:" << endl;
+        printf("j = %d\n",j);
+        printf("j1 = %d\n",j1);
+        printf("j2 = %d\n",j2);
+      #endif
+
+
       //Particle generation
       Particle->SetTheta(RndmPtr->RndmTheta());
       Particle->SetPhi(RndmPtr->Uniform(0.,2.*TMath::Pi()));
@@ -98,8 +107,7 @@ void Simulation(int N_exp = 1e2, unsigned int seed = 69420, const char* input_fi
       //Particle transport
       //Beam pipe interaction
       MyPoint* tmpPoint = new MyPoint(Vertex->GetX(),Vertex->GetY(),Vertex->GetZ());
-//      tmpPoint = Vertex->GetPoint();
-      *Hit = BeamPipe.Hit(tmpPoint, Particle);
+      *Hit = BeamPipe.Hit(tmpPoint, Particle);  //Particle transport
       #if DEBUG == TRUE
         cout << "Hit position on the beam pipe = (" << Hit->GetX() << ", " <<
                                                        Hit->GetY() << ", " <<
@@ -109,9 +117,8 @@ void Simulation(int N_exp = 1e2, unsigned int seed = 69420, const char* input_fi
 
 
       //First layer interaction
-      *Hit = Layer1.Hit(Hit, Particle);
-//      new(L1Hit[j])MyPoint(Hit->GetX(),Hit->GetY(),Hit->GetZ());
-      new(L1Hit[j1])MySignal(Hit);
+      *Hit = Layer1.Hit(Hit, Particle); //Particle transport
+
       #if DEBUG == TRUE
         cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
                                                                   Hit->GetY() << ", " <<
@@ -119,43 +126,58 @@ void Simulation(int N_exp = 1e2, unsigned int seed = 69420, const char* input_fi
                                                                   Hit->GetRadius() << endl;
       #endif
 
-      if(Hit->GetZ() > -Layer1.GetH()/2. && Hit->GetZ() < Layer1.GetH()/2.){  //NB CON QUESTO IF CRASHA, CAPIRE PERCHE'
+      if(Hit->GetZ() > -1.*Layer1.GetH()/2. && Hit->GetZ() < Layer1.GetH()/2.){ //Check if Z is on the detector
+
+        new(L1Hit[j1])MySignal(Hit);
+
         //Second layer interaction
         *Hit = Layer2.Hit(Hit, Particle);
-  //      new(L2Hit[j])MyPoint(Hit->GetX(),Hit->GetY(),Hit->GetZ());
-        new(L2Hit[j2])MySignal(Hit);
         #if DEBUG == TRUE
-          cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
+          cout << "Hit position on the second detector layer = (" << Hit->GetX() << ", " <<
                                                                     Hit->GetY() << ", " <<
                                                                     Hit->GetZ() << "); Radius of the position = " << 
                                                                     Hit->GetRadius() << endl;
         #endif
 
+        if(Hit->GetZ() > -1.*Layer2.GetH()/2. && Hit->GetZ() < Layer2.GetH()/2.){ //Check if Z is on the detector
+
+          new(L2Hit[j2])MySignal(Hit);
 
 
-        #if DEBUG == TRUE
-          printf("Evento %d - moltepl: %d - interazione: %d\n",i,mult,j+1);
-          printf("x= %f ; y= %f; z= %f \n",Vertex->GetX(),Vertex->GetY(),Vertex->GetZ());
-          printf("Entries nel TClonesArray1: %d\n",HitsOnL1->GetEntries());
-          MySignal *tst1=(MySignal*)HitsOnL1->At(j);
-          std::cout<< "Hit on L1 " << j << ") z, phi = " << tst1->GetPhi() << "; " << tst1->GetZ() << std::endl;
-          printf("Entries nel TClonesArray2: %d\n",HitsOnL2->GetEntries());
-          MySignal *tst2=(MySignal*)HitsOnL2->At(j);
-          std::cout << "Hit on L2 " << j << ") z, phi = " << tst2->GetPhi() << "; " << tst2->GetZ() << std::endl;
-        #endif
 
-        j2++;
+//        #if DEBUG == TRUE
+//          printf("Evento %d - moltepl: %d - interazione: %d\n",i,mult,j+1);
+//          printf("x= %f ; y= %f; z= %f \n",Vertex->GetX(),Vertex->GetY(),Vertex->GetZ());
+//          printf("Entries nel TClonesArray1: %d\n",HitsOnL1->GetEntries());
+//          MySignal *tst1=(MySignal*)HitsOnL1->At(j1);
+//          std::cout<< "Hit on L1 " << j1 << ") phi, z = " << tst1->GetPhi() << "; " << tst1->GetZ() << std::endl;
+//          printf("Entries nel TClonesArray2: %d\n",HitsOnL2->GetEntries());
+//          MySignal *tst2=(MySignal*)HitsOnL2->At(j2);
+//          std::cout << "Hit on L2 " << j2 << ") phi, z = " << tst2->GetPhi() << "; " << tst2->GetZ() << std::endl;
+//        #endif
 
-      }
 
-      #if DEBUG == TRUE
-        printf("j = %d; j1 = %d; j2 = %d\n",j,j1,j2);
-      #endif
 
+          j2++;
+
+        }
 
       j1++;
 
+
+      }
+
+
+
+      #if DEBUG == TRUE
+        cout << "Indeces at the end of the for cycle:" << endl;
+        printf("j = %d\n",j);
+        printf("j1 = %d\n",j1);
+        printf("j2 = %d\n\n\n",j2);
+      #endif
+
     }
+
 
     Tree->Fill();
 
@@ -164,6 +186,7 @@ void Simulation(int N_exp = 1e2, unsigned int seed = 69420, const char* input_fi
 
   }
 
+//Writing and saving the output file
   hfile.Write();
   hfile.Close();
 
@@ -177,8 +200,10 @@ void Simulation(int N_exp = 1e2, unsigned int seed = 69420, const char* input_fi
 
 //NECESSARIO AGGIUNGERE SMEARING E MULTISCATTERING
 //AGGIUNGERE ANCHE MOTLEPLICITA' FISSA E DA DISTRIBUZIONE UNIFORME
-//OPPORTUNO INIZIARE ANCHE LA RICOSTRUZIONE E L'ESTRAZIONE DELLE COSE DAL TREE
+//OPPORTUNO INIZIARE ANCHE LA RICOSTRUZIONE
 
-//AGGIUNGERE MYSIGNAL E REGISTRARE I SEGNALI IN TCLONESARRAY DI MYSIGNAL E NON DI MYPOINT, E TESTARE SE MYSIGNAL FUNZIONA
+//CAPIRE COME SALVARE SOLO GLI HIT IN POSIZIONI FISICAMENTE SENSATE CIOE' SOLO PER Z APPARTENENTI AL DETECTOR
+
+
 
 }
