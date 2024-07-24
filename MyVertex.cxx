@@ -17,7 +17,7 @@ MyVertex::MyVertex():MyPoint(),
 
 
 //___________________________________________________________________________
-MyVertex::MyVertex(double X, double Y, double Z, int mult):MyPoint(),
+MyVertex::MyVertex(MyPoint* Point, int mult):MyPoint(),
  dmMult(mult){
 	//standard constructor 
 }	     
