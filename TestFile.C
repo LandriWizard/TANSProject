@@ -99,9 +99,9 @@ void Test(int N_exp = 2, unsigned int seed = 69420, const char* input_file = "ki
     Vertex->SetMult(RndmPtr->RndmMult());
 
     #if DEBUG == TRUE
-      cout << "Generated vertex #" << i+1 << " = (" << Vertex->GetPoint()->GetX() << ", " <<
-                                                       Vertex->GetPoint()->GetY() << ", " <<
-                                                       Vertex->GetPoint()->GetZ() << ");" << endl;
+      cout << "Generated vertex #" << i+1 << " = (" << Vertex->GetX() << ", " <<
+                                                       Vertex->GetY() << ", " <<
+                                                       Vertex->GetZ() << ");" << endl;
       cout << "Random multiplicity = " << Vertex->GetMult() << ";" << endl;
     #endif
 
