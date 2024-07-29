@@ -1,9 +1,12 @@
-#include "TFile.h"
-#include "TTree.h"
-#include "TBranch.h"
-#include "TMath.h"
-#include "TClonesArray.h"
 #include "Riostream.h"
+#include "TBranch.h"
+#include "TClonesArray.h"
+#include "TFile.h"
+#include "TMath.h"
+
+#include "TLeaf.h"
+
+#include "TTree.h"
 
 #include "MyParticle.h"
 #include "MyPhysics.h"
@@ -13,17 +16,13 @@
 
 #define TRUE 1
 #define FALSE 0
-#define DEBUG TRUE
+#define DEBUG FALSE
 
 using namespace std;
 
 //IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
 
-void Test(int N_exp = 2, unsigned int seed = 69420, const char* input_file = "kinem.root"){
-
-  double X,Y,Z;
-  int mult;
-//  const char* input_file = "kinem.root";
+void Test(int N_exp = 1e6, unsigned int seed = 69420, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -31,129 +30,124 @@ void Test(int N_exp = 2, unsigned int seed = 69420, const char* input_file = "ki
   if(RndmPtr->GetFlag()) cout << "There is no file named " << input_file << " in the chosen directory" << endl;
   else cout << "File " << input_file << " was found, beginning the operations" << endl;
 
+  TFile hfile(output_file,"RECREATE");
+
+  double X,Y,Z;
+  int mult;
+
+  TTree* Tree = new TTree("T","Tree with 3 branches");
+  TClonesArray* HitsOnL1 = new TClonesArray("MyPoint",100);
+  TClonesArray& L1Hit = *HitsOnL1;
+  TClonesArray* HitsOnL2 = new TClonesArray("MyPoint",100);
+  TClonesArray& L2Hit = *HitsOnL2;
+
   MyPoint* Point = new MyPoint();
-
-//  #if DEBUG == TRUE
-//    Point->SetX(RndmPtr->Gaus(0.,0.053));
-//    Point->SetY(RndmPtr->Gaus(0.,0.0001));
-//    Point->SetZ(RndmPtr->Gaus(0.,0.0001));
-//    cout << "Punto generato casualmente, gettato dal punto = (" << Point->GetX() << ", " 
-//                                                                << Point->GetY() << ", " 
-//                                                                << Point->GetZ() << ");" << endl;
-//  #endif
-
   MyVertex* Vertex = new MyVertex();
 
-//  #if DEBUG == TRUE
-//    Vertex->SetPoint(Point);
-//    MyPoint* PointRec = new MyPoint();
-//    PointRec = Vertex->GetPoint();
-//    cout << PointRec << endl;
-//    cout << "Punto generato casualmente, gettato dal vertice = (" << PointRec->GetX() << ", " 
-//                                                                  << PointRec->GetY() << ", " 
-//                                                                  << PointRec->GetZ() << ");" << endl;
-//
-//    MyVertex* Vertex2 = new MyVertex();
-//    MyPoint* PointRec2 = new MyPoint();
-//    Vertex2->SetPoint(Point);
-//    PointRec2 = Vertex2->GetPoint();
-//    cout << "Punto copiato da vertex a vertex2 = (" << Vertex2->GetPoint()->GetX() << ", " 
-//                                                    << Vertex2->GetPoint()->GetY() << ", " 
-//                                                    << Vertex2->GetPoint()->GetZ() << ");" << endl;
-//  #endif
 
-//Generatori di vertice, inizio con la generazione di un vertice con molteplicità estratta da kinem.root
-//Ancora da inserire: molteplicità fissa e estratta da distribuzione uniforme
+  Tree->Branch("VertMult",&Vertex);
+  Tree->Branch("Hits on Layer 1",&HitsOnL1);
+  Tree->Branch("Hits on Layer 2",&HitsOnL2);
 
+  Tree->SetAutoSave(0);
 
-//  #if DEBUG == TRUE
-//    int generated_mult;
-//    for(int i = 0; i < 10; i++){
-//      generated_mult = RndmPtr->RndmMult();
-//      cout << "Multiplicity extracted from the given distribution = " << generated_mult << endl;
-//      }
-//  #endif
-
-//Generazione delle varie particelle di ogni vertice
-
-//  #if DEBUG == TRUE
-//    double generated_theta;
-//    for(int i = 0; i < 10; i++){
-//      generated_theta = RndmPtr->RndmTheta();
-//      cout << "Theta extracted from the given distribution = " << generated_theta << endl;
-//    }
-//  #endif
+  //Generatori di vertice, inizio con la generazione di un vertice con molteplicità estratta da kinem.root
+  //Ancora da inserire: molteplicità fissa e estratta da distribuzione uniforme
 
   MyPoint* Hit = new MyPoint(); //Points used to store the true position of where the particles hit the detectors
   MyParticle* Particle = new MyParticle();
-  MyPhysics BeamPipe(.03,.54);
-  MyPhysics Layer1(.04,.27);
-  MyPhysics Layer2(.07,.27);
+  MyPhysics BeamPipe(3.,54.);
+  MyPhysics Layer1(4.,27.);
+  MyPhysics Layer2(7.,27.);
 
+  //Events loop
   for(int i = 0; i < N_exp; i++){
+
+    if(i%100000 == 0) cout << "Vertex #" << i << endl;
+
     //Vertex generation
-    Point->SetX(RndmPtr->Gaus(0.,.0001));
-    Point->SetY(RndmPtr->Gaus(0.,.0001));
-    Point->SetZ(RndmPtr->Gaus(0.,.053));
-    Vertex->SetPoint(Point);
+    Vertex->SetX(RndmPtr->Gaus(0.,0.01));
+    Vertex->SetY(RndmPtr->Gaus(0.,0.01));
+    Vertex->SetZ(RndmPtr->Gaus(0.,5.3));
     Vertex->SetMult(RndmPtr->RndmMult());
+    mult = Vertex->GetMult();
 
     #if DEBUG == TRUE
-      cout << "Generated vertex #" << i+1 << " = (" << Vertex->GetPoint()->GetX() << ", " <<
-                                                       Vertex->GetPoint()->GetY() << ", " <<
-                                                       Vertex->GetPoint()->GetZ() << ");" << endl;
-      cout << "Random multiplicity = " << Vertex->GetMult() << ";" << endl;
+      cout << "Generated vertex #" << i << " = (" << Vertex->GetPoint()->GetX() << ", " <<
+                                                     Vertex->GetPoint()->GetY() << ", " <<
+                                                     Vertex->GetPoint()->GetZ() << ");" << endl;
+      cout << "Random multiplicity = " << mult << ";" << endl;
     #endif
 
-    for(int j = 0; j < Vertex->GetMult(); j++){
+    //Multiplicity loop
+    for(int j = 0; j < mult; j++){
       //Particle generation
       Particle->SetTheta(RndmPtr->RndmTheta());
       Particle->SetPhi(RndmPtr->Uniform(0.,2.*TMath::Pi()));
 
-      #if DEBUG == TRUE
-        cout << "Random theta = " << Particle->GetTheta() << ";" << endl;
-        cout << "Random phi = " << Particle->GetPhi() << ";" << endl;
-      #endif
-
       //Particle transport
       //Beam pipe interaction
-      MyPoint* tmpPoint = new MyPoint();
-      tmpPoint = Vertex->GetPoint();
-      tmpPoint->SetZ(0.);
-      cout << tmpPoint->GetZ() << endl;
-      *Hit = BeamPipe.Hit(Vertex->GetPoint(), Particle);
+      MyPoint* tmpPoint = new MyPoint(Vertex->GetX(),Vertex->GetY(),Vertex->GetZ());
+//      tmpPoint = Vertex->GetPoint();
+      *Hit = BeamPipe.Hit(tmpPoint, Particle);
       #if DEBUG == TRUE
         cout << "Hit position on the beam pipe = (" << Hit->GetX() << ", " <<
                                                        Hit->GetY() << ", " <<
                                                        Hit->GetZ() << "); Radius of the position = " << 
-                                                       TMath::Sqrt(Hit->GetX()*Hit->GetX() + 
-                                                                   Hit->GetY()*Hit->GetY()) << endl;
+                                                       Hit->GetRadius() << endl;
       #endif
 
 
       //First layer interaction
       *Hit = Layer1.Hit(Hit, Particle);
+      new(L1Hit[j])MyPoint(Hit->GetX(),Hit->GetY(),Hit->GetZ());
       #if DEBUG == TRUE
         cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
                                                                   Hit->GetY() << ", " <<
                                                                   Hit->GetZ() << "); Radius of the position = " << 
-                                                                  TMath::Sqrt(Hit->GetX()*Hit->GetX() + 
-                                                                              Hit->GetY()*Hit->GetY()) << endl;
+                                                                  Hit->GetRadius() << endl;
       #endif
 
       //Second layer interaction
       *Hit = Layer2.Hit(Hit, Particle);
+      new(L2Hit[j])MyPoint(Hit->GetX(),Hit->GetY(),Hit->GetZ());
       #if DEBUG == TRUE
         cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
                                                                   Hit->GetY() << ", " <<
                                                                   Hit->GetZ() << "); Radius of the position = " << 
-                                                                  TMath::Sqrt(Hit->GetX()*Hit->GetX() + 
-                                                                              Hit->GetY()*Hit->GetY()) << endl;
+                                                                  Hit->GetRadius() << endl;
       #endif
 
-//DA FARE: SALVARE GLI HIT SUI DUE LAYER SU UN QUALCHE CONTAINER (TTREE? TCLONESARRAY?) E PROVARE A FARE
-//UNA RUDIMENTALE RICOSTRUZIONE, SERVE LO SMEARING!!
+
+
+      #if DEBUG == TRUE
+        printf("Evento %d - moltepl: %d - interazione: %d\n",i,mult,j+1);
+        printf("x= %f ; y= %f; z= %f \n",Vertex->GetPoint()->GetX(),Vertex->GetPoint()->GetY(),Vertex->GetPoint()->GetZ());
+        printf("Entries nel TClonesArray1: %d\n",HitsOnL1->GetEntries());
+        MyPoint *tst1=(MyPoint*)HitsOnL1->At(j);
+        std::cout<<"Hit on L1 "<<j<<") x, y, z = "<<tst1->GetX()<<"; "<<tst1->GetY()<<"; "<<tst1->GetZ()<<std::endl;
+        printf("Entries nel TClonesArray2: %d\n",HitsOnL2->GetEntries());
+        MyPoint *tst2=(MyPoint*)HitsOnL2->At(j);
+        std::cout<<"Hit on L2 "<<j<<") x, y, z = "<<tst2->GetX()<<"; "<<tst2->GetY()<<"; "<<tst2->GetZ()<<std::endl;
+      #endif
+
 
     }
+
+    Tree->Fill();
+
+    HitsOnL1->Clear();
+    HitsOnL2->Clear();
+
   }
+
+  hfile.Write();
+  hfile.Close();
+
+
+//NECESSARIO AGGIUNGERE SMEARING E MULTISCATTERING
+//AGGIUNGERE ANCHE MOTLEPLICITA' FISSA E DA DISTRIBUZIONE UNIFORME
+//OPPORTUNO INIZIARE ANCHE LA RICOSTRUZIONE E L'ESTRAZIONE DELLE COSE DAL TREE
+
+
 }
