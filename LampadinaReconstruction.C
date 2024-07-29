@@ -29,8 +29,9 @@ void Reconstruction(){
 
 
   double multiscattering_angle = 0.0012; //in mrad
-  double delta_phi = TMath::ASin(3./7.*TMath::Sin(multiscattering_angle)); //used in the while loop to "slice" the azimuth angle in many parts for the reconstruction
-  int slice_number = 2*TMath::Pi()/delta_phi + 1;
+  double delta_phi = TMath::ASin(3./7.*TMath::Sin(multiscattering_angle)); //I would like to use it in the while loop to "slice" the azimuth angle, cannot because its not a divisor of 2Pi
+  int slice_number = 2*TMath::Pi()/delta_phi + 1; //number of azimuth angle slices
+  double real_delta_phi = 2*TMath::Pi()/(double)slice_number; //actual value used to divide the azimuth angle, is a divisor of 2Pi; differs in the order ~10^-8 from delta_phi
   MyVertex* Vertex = new MyVertex();
   
   // Dichiarazione TClonesArray
@@ -77,5 +78,8 @@ void Reconstruction(){
 //Clock stop and time print
   Clock.Stop();
   Clock.Print();
+
+//delete pointers
+  delete Vertex;
 
 }
