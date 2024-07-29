@@ -20,8 +20,9 @@
 using namespace std;
 
 //IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
+//MULTIPLICITY FLAG VALUES: 1 FOR EXTRACTION FROM GIVEN DISTIBUTION, 2 FOR CONSTANT VALUE, 3 FOR UNIFORM DISTRIBUTION
 
-void Simulation(int N_exp = 1e6, unsigned int seed = 69420, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -63,9 +64,9 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, const char* input_fi
   //Ancora da inserire: molteplicità fissa e estratta da distribuzione uniforme
 
   MyPoint* Hit = new MyPoint(); //Points used to store the true position of where the particles hit the detectors
-  MyParticle* Particle = new MyParticle();
-  MyPhysics BeamPipe(3.,54.);
+  MyParticle* Particle = new MyParticle(); //The particle that will be transported, contains the theta and phi of the trajectory
 
+  MyPhysics BeamPipe(3.,54.);
   MyPhysics Layer1(4.,27.);
   MyPhysics Layer2(7.,27.);
 
@@ -162,8 +163,7 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, const char* input_fi
 
         }
 
-      j1++;
-
+        j1++;
 
       }
 
@@ -199,11 +199,10 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, const char* input_fi
   delete Particle;
 
 //NECESSARIO AGGIUNGERE SMEARING E MULTISCATTERING
-//AGGIUNGERE ANCHE MOTLEPLICITA' FISSA E DA DISTRIBUZIONE UNIFORME
+//AGGIUNGERE FUNTORI PER MOTLEPLICITA' FISSA E DA DISTRIBUZIONE UNIFORME
 //OPPORTUNO INIZIARE ANCHE LA RICOSTRUZIONE
 
-//CAPIRE COME SALVARE SOLO GLI HIT IN POSIZIONI FISICAMENTE SENSATE CIOE' SOLO PER Z APPARTENENTI AL DETECTOR
-
+//SCATTERING MULTIPLO: 1.2 MILLIRADIANTI PER SOVRASTIMARE IL FENOMENO
 
 
 }
