@@ -30,11 +30,10 @@ void Reconstruction(){
 
   double multiscattering_angle = 0.0012; //in mrad
   double delta_phi = TMath::ASin(3./7.*TMath::Sin(multiscattering_angle)); //used in the while loop to "slice" the azimuth angle in many parts for the reconstruction
+  int slice_number = 2*TMath::Pi()/delta_phi + 1;
   MyVertex* Vertex = new MyVertex();
   
   // Dichiarazione TClonesArray
-//  TClonesArray *hitsL1 = new TClonesArray("MyPoint",100);
-//  TClonesArray *hitsL2 = new TClonesArray("MyPoint",100);
   TClonesArray *HitsL1 = new TClonesArray("MySignal",100);
   TClonesArray *HitsL2 = new TClonesArray("MySignal",100);
   //Apertura file di input
