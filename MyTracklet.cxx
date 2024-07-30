@@ -1,14 +1,12 @@
 #include "MyTracklet.h"
 
-#include "TMath.h"
-#include "Riostream.h"
-
 ClassImp(MyTracklet)
 
-////////////////////////////////////////////////
-// Class containing the Tracklets, i.e. the     //
-// recorded hits used for the reconstruction  //
-////////////////////////////////////////////////
+//////////////////////////////////////////////
+// Class containing the Tracklets, i.e. the //
+// tracks obtained from hits on layer 2 and //
+// compatible hits on layer 1               //
+//////////////////////////////////////////////
 
 //___________________________________________________________________________
 MyTracklet::MyTracklet(): TObject(),
@@ -27,6 +25,15 @@ dmZ1(Z1),
 dmZ2{Z2}{
   //Standard constructor
 }
+
+//___________________________________________________________________________
+MyTracklet::MyTracklet(MySignal* InnerSignal, MySignal* OuterSignal){
+  dmR1 = InnerSignal->GetR();
+  dmR2 = OuterSignal->GetR();
+  dmZ1 = InnerSignal->GetZ();
+  dmZ2 = OuterSignal->GetZ();
+}
+
 
 //___________________________________________________________________________
 MyTracklet::MyTracklet(const MyTracklet& source): TObject(source)
@@ -51,4 +58,12 @@ MyTracklet& MyTracklet::operator=(const MyTracklet& source){
     new(this) MyTracklet(source);
     return *this;
     //copy operator
+}
+
+//___________________________________________________________________________
+//Function used to find the intersection between tracklet and the z axis
+double MyTracklet::Intersection(){
+  double m = (dmR2 - dmR1)/(dmZ2 - dmZ1);
+  double z = -(dmR1 - m*dmZ1)/m;
+  return z;
 }

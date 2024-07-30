@@ -1,6 +1,7 @@
 #ifndef MyVertex_H
 #define MyVertex_H
 
+#include "TObject.h"
 #include "MyPoint.h"
 
 class MyVertex : public MyPoint
@@ -15,16 +16,14 @@ class MyVertex : public MyPoint
     virtual ~MyVertex();
     MyVertex& operator=(const MyVertex& source);		
 
-//GETTERS  
     int GetMult() const {return dmMult;}
 
-//SETTERS
     void SetMult(int mult) {dmMult = mult;}
   
   private:
-  
     int dmMult;
   
+
   ClassDef(MyVertex,1)
 
 };

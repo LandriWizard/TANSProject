@@ -15,11 +15,9 @@ class MyParticle : public TObject
     virtual ~MyParticle();
     MyParticle& operator=(const MyParticle& source);		
 
-//GETTERS
     double GetTheta() const {return dmTheta;} 
     double GetPhi() const {return dmPhi;}
 
-//SETTERS
     void SetTheta(double Theta) {dmTheta = Theta;}
     void SetPhi(double Phi) {dmPhi = Phi;}
 

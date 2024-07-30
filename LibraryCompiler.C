@@ -17,6 +17,7 @@ void LibraryCompiler() {
   gSystem->CompileMacro("MyParticle.cxx","kfg");
   gSystem->CompileMacro("MyPhysics.cxx","kfg");
   gSystem->CompileMacro("MySignal.cxx","kfg");
+  gSystem->CompileMacro("MyTracklet.cxx","kfg");
 
   gSystem->CompileMacro("LampadinaSimulation.C","kfg");
   gSystem->CompileMacro("LampadinaReconstruction.C","kfg");

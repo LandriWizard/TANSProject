@@ -11,20 +11,20 @@ ClassImp(MySignal)
 ////////////////////////////////////////////////
 
 //___________________________________________________________________________
-MySignal::MySignal(): TObject(),
-  dmZ(0.),
+MySignal::MySignal(): MyPoint(),
+  dmR(0.),
   dmPhi(0.){
   //Default constructor
 }
 
 //___________________________________________________________________________
-MySignal::MySignal(double z, double Phi): TObject(),
-  dmZ(z),
+MySignal::MySignal(double r, double z, double Phi): MyPoint(),
+  dmR(r),
   dmPhi(Phi){
   //Standard constructor
 }
 
-MySignal::MySignal(MyPoint* Point): TObject()
+MySignal::MySignal(MyPoint* Point): MyPoint()
 {
 
   double x = Point->GetX();
@@ -35,14 +35,14 @@ MySignal::MySignal(MyPoint* Point): TObject()
   if(y >= 0.) tmp = TMath::ACos(x/r);
   else tmp = 2.*TMath::Pi() - TMath::ACos(x/r);
 
-  dmZ = Point->GetZ();
+  dmR = r;
   dmPhi = tmp;
 }
 
 //___________________________________________________________________________
-MySignal::MySignal(const MySignal& source): TObject(source)
+MySignal::MySignal(const MySignal& source): MyPoint(source)
 {
-  dmZ = source.dmZ;
+  dmR = source.dmR;
   dmPhi = source.dmPhi;
   //copy constructor  
 }

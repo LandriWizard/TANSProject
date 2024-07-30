@@ -22,7 +22,7 @@ using namespace std;
 //IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
 //MULTIPLICITY FLAG VALUES: 1 FOR EXTRACTION FROM GIVEN DISTIBUTION, 2 FOR CONSTANT VALUE, 3 FOR UNIFORM DISTRIBUTION
 
-void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e1, unsigned int seed = 69420, int multiplicity_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -35,16 +35,12 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   Clock.Start();
 
 //Output file declaration
-  TFile hfile(output_file,"RECREATE");
+  TFile outfile(output_file,"RECREATE");
 
   double X,Y,Z;
   int mult;
 
   TTree* Tree = new TTree("T","Tree with 3 branches");
-//  TClonesArray* HitsOnL1 = new TClonesArray("MyPoint",100);
-//  TClonesArray& L1Hit = *HitsOnL1;
-//  TClonesArray* HitsOnL2 = new TClonesArray("MyPoint",100);
-//  TClonesArray& L2Hit = *HitsOnL2;
   TClonesArray* HitsOnL1 = new TClonesArray("MySignal",100);
   TClonesArray& L1Hit = *HitsOnL1;
   TClonesArray* HitsOnL2 = new TClonesArray("MySignal",100);
@@ -187,14 +183,16 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   }
 
 //Writing and saving the output file
-  hfile.Write();
-  hfile.Close();
+  outfile.Write();
+  outfile.Close();
 
 //Stopwatch stop and time print
   Clock.Stop();
   Clock.Print();
 
 //Deallocating pointers
+  delete Point;
+  delete Vertex;
   delete Hit;
   delete Particle;
 

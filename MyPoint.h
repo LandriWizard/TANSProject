@@ -14,13 +14,11 @@ class MyPoint : public TObject
     virtual ~MyPoint();
     MyPoint& operator=(const MyPoint& source);		
 
-//GETTERS
     double GetX() const {return dmX;} 
     double GetY() const {return dmY;}
     double GetZ() const {return dmZ;}
     double GetRadius() const;
 
-//SETTERS
     void SetX(double x) {dmX = x;}
     void SetY(double y) {dmY = y;}
     void SetZ(double z) {dmZ = z;}
