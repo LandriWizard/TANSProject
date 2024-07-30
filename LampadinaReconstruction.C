@@ -16,7 +16,7 @@
 
 #define FALSE 0
 #define TRUE 1
-#define DEBUG TRUE
+#define DEBUG FALSE
 
 using namespace std;
 
@@ -95,13 +95,15 @@ void Reconstruction(const char* input_file = "simulation.root"){
       Tracklet->SetZ1(InteractionOnLayer1->GetZ()); //insertion of Z1 in the tracklet
 
       for(int j = 0; j < HitsL2->GetEntries(); j++){  //for cycle on 2nd layer
-      MySignal* InteractionOnLayer2 = (MySignal*)HitsL2->At(j);
-      #if DEBUG == TRUE
-        cout << "Interatcion on layer 2 #" << j << "; z, phi, r = " << InteractionOnLayer2->GetZ() << ";\t " << InteractionOnLayer2->GetPhi()   
-                                                                                                   << ";\t " << InteractionOnLayer2->GetR() << "; " << endl;
-      #endif
+        MySignal* InteractionOnLayer2 = (MySignal*)HitsL2->At(j);
+        #if DEBUG == TRUE
+          cout << "Interatcion on layer 2 #" << j << "; z, phi, r = " << InteractionOnLayer2->GetZ() << ";\t " << InteractionOnLayer2->GetPhi()   
+                                                                                                     << ";\t " << InteractionOnLayer2->GetR() << "; " << endl;
+        #endif
 
+//        delete InteractionOnLayer2;
       }
+//      delete InteractionOnLayer1;
     }
   }
  
@@ -111,5 +113,6 @@ void Reconstruction(const char* input_file = "simulation.root"){
 
 //delete pointers
   delete Vertex;
+  delete Tracklet;
 
 }
