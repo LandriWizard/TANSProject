@@ -39,5 +39,5 @@ MyParticle& MyParticle::operator=(const MyParticle& source){
   this->~MyParticle();
   new(this) MyParticle(source);
   return *this;
-  //= operator
+  //Copy operator
 }

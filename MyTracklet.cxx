@@ -1,63 +1,54 @@
-#include "MySignal.h"
+#include "MyTracklet.h"
 
 #include "TMath.h"
 #include "Riostream.h"
 
-ClassImp(MySignal)
+ClassImp(MyTracklet)
 
 ////////////////////////////////////////////////
-// Class containing the signals, i.e. the     //
+// Class containing the Tracklets, i.e. the     //
 // recorded hits used for the reconstruction  //
 ////////////////////////////////////////////////
 
 //___________________________________________________________________________
-MySignal::MySignal(): TObject(),
-  dmZ(0.),
-  dmPhi(0.){
+MyTracklet::MyTracklet(): TObject(),
+  dmR1(0.),
+  dmR2(0.),
+  dmZ1(0.),
+  dmZ2{0.}{
   //Default constructor
 }
 
 //___________________________________________________________________________
-MySignal::MySignal(double z, double Phi): TObject(),
-  dmZ(z),
-  dmPhi(Phi){
+MyTracklet::MyTracklet(double R1, double R2, double Z1, double Z2): TObject(),
+dmR1(R1),
+dmR2(R2),
+dmZ1(Z1),
+dmZ2{Z2}{
   //Standard constructor
 }
 
-MySignal::MySignal(MyPoint* Point): TObject()
-{
-
-  double x = Point->GetX();
-  double y = Point->GetY();
-  double r = Point->GetRadius();
-  double tmp;
-
-  if(y >= 0.) tmp = TMath::ACos(x/r);
-  else tmp = 2.*TMath::Pi() - TMath::ACos(x/r);
-
-  dmZ = Point->GetZ();
-  dmPhi = tmp;
-}
-
 //___________________________________________________________________________
-MySignal::MySignal(const MySignal& source): TObject(source)
+MyTracklet::MyTracklet(const MyTracklet& source): TObject(source)
 {
-  dmZ = source.dmZ;
-  dmPhi = source.dmPhi;
+  dmR1 = source.dmR1;
+  dmR2 = source.dmR2;
+  dmZ1 = source.dmZ1;
+  dmZ2 = source.dmZ2;
   //copy constructor  
 }
 
 //___________________________________________________________________________
-MySignal::~MySignal()
+MyTracklet::~MyTracklet()
 {
   //Default destructor
 }
 
 //___________________________________________________________________________
-MySignal& MySignal::operator=(const MySignal& source){
+MyTracklet& MyTracklet::operator=(const MyTracklet& source){
     if(this == &source) return *this;
-    this->~MySignal();
-    new(this) MySignal(source);
+    this->~MyTracklet();
+    new(this) MyTracklet(source);
     return *this;
     //copy operator
 }

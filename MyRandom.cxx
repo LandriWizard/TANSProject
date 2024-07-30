@@ -55,7 +55,7 @@ MyRandom& MyRandom::operator=(const MyRandom& source){
   this->~MyRandom();
   new(this) MyRandom(source);
   return *this;
-  //= operator
+  //Copy operator
 }
 
 int MyRandom::RndmMult() {

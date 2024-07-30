@@ -41,5 +41,5 @@ MyVertex& MyVertex::operator=(const MyVertex& source){
   this->~MyVertex();
   new(this) MyVertex(source);
   return *this;
-  //= operator
+  //Copy operator
 }

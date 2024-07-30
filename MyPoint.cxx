@@ -43,7 +43,7 @@ MyPoint& MyPoint::operator=(const MyPoint& source){
   this->~MyPoint();
   new(this) MyPoint(source);
   return *this;
-  //= operator
+  //copy operator
 }
 
 //___________________________________________________________________________

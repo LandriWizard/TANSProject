@@ -14,6 +14,9 @@ class MyPhysics : public TObject{
     MyPhysics(const MyPhysics& source);
     virtual ~MyPhysics();
 
+    MyPhysics& operator=(const MyPhysics& source);
+
+
     double GetR() const {return dmR;}
     double GetH() const {return dmH;}
 
