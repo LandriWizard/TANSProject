@@ -86,14 +86,22 @@ void Reconstruction(const char* input_file = "simulation.root"){
       }
     #endif
 
-    for(int i = 0; i < HitsL1->GetEntries(); i++){
+    for(int i = 0; i < HitsL1->GetEntries(); i++){ //for cycle on 1st layer
       MySignal* InteractionOnLayer1 = (MySignal*)HitsL1->At(i);
       #if DEBUG == TRUE
         cout << "Interatcion on layer 1 #" << i << "; z, phi, r = " << InteractionOnLayer1->GetZ() << ";\t " << InteractionOnLayer1->GetPhi() 
                                                                                                    << ";\t " << InteractionOnLayer1->GetR() << "; " << endl;
       #endif
-      Tracklet->SetZ1(InteractionOnLayer1->GetZ());
+      Tracklet->SetZ1(InteractionOnLayer1->GetZ()); //insertion of Z1 in the tracklet
 
+      for(int j = 0; j < HitsL2->GetEntries(); j++){  //for cycle on 2nd layer
+      MySignal* InteractionOnLayer2 = (MySignal*)HitsL2->At(j);
+      #if DEBUG == TRUE
+        cout << "Interatcion on layer 2 #" << j << "; z, phi, r = " << InteractionOnLayer2->GetZ() << ";\t " << InteractionOnLayer2->GetPhi()   
+                                                                                                   << ";\t " << InteractionOnLayer2->GetR() << "; " << endl;
+      #endif
+
+      }
     }
   }
  
