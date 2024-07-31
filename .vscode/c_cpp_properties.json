@@ -4,7 +4,7 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${ROOTSYS}/include"
+                "${HOME}/Software/miniforge3/envs/root-env/include/**"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

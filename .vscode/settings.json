@@ -1,0 +1,10 @@
+{
+  "files.associations": {
+    "LampadinaSimulation.C": "cpp",
+    "LampadinaReconstruction.C": "cpp",
+    "TestFile.C": "cpp",
+    "LibraryCompiler.C": "cpp"
+  },
+  "C_Cpp.default.compilerPath": "/usr/bin/g++-9",
+  "C_Cpp.inlayHints.referenceOperator.showSpace": false
+}
