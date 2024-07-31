@@ -22,7 +22,7 @@ using namespace std;
 //IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
 //MULTIPLICITY FLAG VALUES: 1 FOR EXTRACTION FROM GIVEN DISTIBUTION, 2 FOR CONSTANT VALUE, 3 FOR UNIFORM DISTRIBUTION
 
-void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -40,21 +40,11 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
   double X,Y,Z;
   int mult;
 
-  TTree* Tree = new TTree("T","Tree with 3 branches");
-  TClonesArray* HitsOnL1 = new TClonesArray("MySignal",100);
-  TClonesArray& L1Hit = *HitsOnL1;
-  TClonesArray* HitsOnL2 = new TClonesArray("MySignal",100);
-  TClonesArray& L2Hit = *HitsOnL2;
 
   MyPoint* Point = new MyPoint();
   MyVertex* Vertex = new MyVertex();
 
 
-  Tree->Branch("VertMult",&Vertex);
-  Tree->Branch("HitsL1",&HitsOnL1);
-  Tree->Branch("HitsL2",&HitsOnL2);
-
-  Tree->SetAutoSave(0);
 
   //Generatori di vertice, inizio con la generazione di un vertice con molteplicità estratta da kinem.root
   //Ancora da inserire: molteplicità fissa e estratta da distribuzione uniforme
@@ -66,16 +56,65 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
   MyPhysics Layer1(4.,27.);
   MyPhysics Layer2(7.,27.);
 
+  //Functors definition
+  //Multiplicity extraction functor
+  int dim = 0;  //Dimension of the TClonesArray storing the hits
+  int N;
+  int (MyRandom::*RndmMult) (int);
+    //MULTIPLICITY FLAG VALUES: 1 FOR EXTRACTION FROM GIVEN DISTIBUTION, 2 FOR CONSTANT VALUE, 3 FOR UNIFORM DISTRIBUTION
+  switch (multiplicity_flag){
+  case 1:
+    RndmMult = &MyRandom::RndmMult_FromDistribution;
+    dim = 70;
+    break;
+  case 2:
+    cout << "How many particles do you want for each vertex? ";
+    cin >> N;
+    cout << "You chose to have " << N << " particles for each vertex" << endl;
+    RndmMult = &MyRandom::RndmMult_Constant;
+    dim = N;
+    break;
+  case 3: 
+    cout << "What is the wanted maximum number of particles for each vertex? ";
+    cin >> N;
+    cout << "You chose to have a maximum of " << N << " particles for each vertex" << endl;
+    RndmMult = &MyRandom::RndmMult_Uniform;
+    dim = N/2 + 1;
+    break;
+  default:
+    cout << "multiplicity_flag value choice not valid. 1 for extraction from given distribution, 2 for constant value, 3 for uniform distribution" << endl;
+    RndmMult = &MyRandom::RndmMult_FromDistribution;
+    dim = 70;
+    break;
+  }
+
+  TTree* Tree = new TTree("T","Tree with 3 branches");
+  TClonesArray* HitsOnL1 = new TClonesArray("MySignal",dim);
+  TClonesArray& L1Hit = *HitsOnL1;
+  TClonesArray* HitsOnL2 = new TClonesArray("MySignal",dim);
+  TClonesArray& L2Hit = *HitsOnL2;
+
+  Tree->Branch("VertMult",&Vertex);
+  Tree->Branch("HitsL1",&HitsOnL1);
+  Tree->Branch("HitsL2",&HitsOnL2);
+
+  Tree->SetAutoSave(0);
+
+
+
   //Events loop
   for(int i = 0; i < N_exp; i++){
 
     if(i%100000 == 0) cout << "Vertex #" << i << endl;
 
-    //Vertex generation
+    //Vertex cohordinates generation
     Vertex->SetX(RndmPtr->Gaus(0.,0.01));
     Vertex->SetY(RndmPtr->Gaus(0.,0.01));
     Vertex->SetZ(RndmPtr->Gaus(0.,5.3));
-    Vertex->SetMult(RndmPtr->RndmMult());
+    //Vertex multiplicity generation
+    Vertex->SetMult((RndmPtr->*RndmMult)(N));
+
+
     mult = Vertex->GetMult();
 
     #if DEBUG == TRUE

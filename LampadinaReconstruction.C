@@ -16,14 +16,14 @@
 
 #define FALSE 0
 #define TRUE 1
-#define DEBUG TRUE
+#define DEBUG FALSE
 
 using namespace std;
 
 
 //IMPORTANT: LENGHTS ARE IN CM, ANGLES IN RAD
 
-void Reconstruction(const char* input_file = "simulation.root"){
+void Reconstruction(const char* input_file = "simulation.root", const char* log_file = "reconstruction_log.txt"){
 
 //Stopwatch declaration and start
   TStopwatch Clock;
@@ -52,6 +52,10 @@ void Reconstruction(const char* input_file = "simulation.root"){
 		cout << "There is no file named " << input_file << " in the chosen directory" << endl;
 		return;
 	}
+
+  //Opening log file
+  ofstream lfile(log_file);
+
   //Lettura TTree  e branch
   TTree *tree = (TTree*)infile.Get("T");
   TBranch *b1 = tree->GetBranch("VertMult");
@@ -65,64 +69,89 @@ void Reconstruction(const char* input_file = "simulation.root"){
   b2->SetAddress(&HitsL1);
   b3->SetAddress(&HitsL2);
 
+
   // loop sugli ingressi nel TTree
   for(int ev = 0; ev < tree->GetEntries(); ev++){
     tree->GetEvent(ev);
 
-    #if DEBUG == TRUE
-      cout << "Evento " << ev << "; Molteplicita= " << Vertex->GetMult() << endl;
-      cout << "X,Y,Z = " << Vertex->GetX() << "; " << Vertex->GetY() << "; " << Vertex->GetZ() << endl;
-      int num1 = HitsL1->GetEntries();
-      int num2 = HitsL2->GetEntries();
-      cout << "Numero di elementi nel primo TClonesArray " << num1 << endl;
-      cout << "Numero di elementi nel secondo TClonesArray " << num2 << endl;
-      for (int j=0; j < num1; j++){
-        MySignal *tst1=(MySignal*)HitsL1->At(j);
-        cout << "Hit on L1 # " << j << ") z, phi, r = " << tst1->GetZ() << ";\t " << tst1->GetPhi() << ";\t " << tst1->GetR() << ";\t " << endl;
-      }
-      for (int j=0; j < num2; j++){
-        MySignal *tst2=(MySignal*)HitsL2->At(j);
-        cout << "Hit on L2 # " << j << ") z, phi, r = " << tst2->GetZ() << ";\t " << tst2->GetPhi() << ";\t " << tst2->GetR() << ";\t " << endl;
-      }
-    #endif
+//    #if DEBUG == TRUE
+//      cout << "Evento " << ev << "; Molteplicita= " << Vertex->GetMult() << endl;
+//      cout << "X,Y,Z = " << Vertex->GetX() << "; " << Vertex->GetY() << "; " << Vertex->GetZ() << endl;
+//      int num1 = HitsL1->GetEntries();
+//      int num2 = HitsL2->GetEntries();
+//      cout << "Numero di elementi nel primo TClonesArray " << num1 << endl;
+//      cout << "Numero di elementi nel secondo TClonesArray " << num2 << endl;
+//      for (int j=0; j < num1; j++){
+//        MySignal *tst1=(MySignal*)HitsL1->At(j);
+//        cout << "Hit on L1 # " << j << ") z, phi, r = " << tst1->GetZ() << ";\t " << tst1->GetPhi() << ";\t " << tst1->GetR() << ";\t " << endl;
+//      }
+//      for (int j=0; j < num2; j++){
+//        MySignal *tst2=(MySignal*)HitsL2->At(j);
+//        cout << "Hit on L2 # " << j << ") z, phi, r = " << tst2->GetZ() << ";\t " << tst2->GetPhi() << ";\t " << tst2->GetR() << ";\t " << endl;
+//      }
+//    #endif
+
+    int vertex_counter = 0;
 
     for(int i = 0; i < HitsL1->GetEntries(); i++){ //for cycle on 1st layer
+
+      bool signal_vertex_check = 0; //bool to check if we find a vertex for each signal on layer 1
+
       MySignal* InteractionOnLayer1 = (MySignal*)HitsL1->At(i);
-      #if DEBUG == TRUE
-        cout << "Interatcion on layer 1 #" << i << "; z, phi, r = " << InteractionOnLayer1->GetZ() << ";\t " << InteractionOnLayer1->GetPhi() 
-                                                                                                   << ";\t " << InteractionOnLayer1->GetR() << "; " << endl;
-      #endif
+//      #if DEBUG == TRUE
+//        lfile << "Interatcion on layer 1 #" << i << "; z, phi, r = " << InteractionOnLayer1->GetZ() << ";\t " << InteractionOnLayer1->GetPhi() 
+//                                                                                                   << ";\t " << InteractionOnLayer1->GetR() << "; " << endl;
+//      #endif
       Tracklet->SetZ1(InteractionOnLayer1->GetZ()); //insertion of Z1 in the tracklet
 
       for(int j = 0; j < HitsL2->GetEntries(); j++){  //for cycle on 2nd layer
         MySignal* InteractionOnLayer2 = (MySignal*)HitsL2->At(j);
-        #if DEBUG == TRUE
-          cout << "Interatcion on layer 2 #" << j << "; z, phi, r = " << InteractionOnLayer2->GetZ() << ";\t " << InteractionOnLayer2->GetPhi()   
-                                                                                                     << ";\t " << InteractionOnLayer2->GetR() << "; " << endl;
-        #endif
+//        #if DEBUG == TRUE
+//          lfile << "Interatcion on layer 2 #" << j << "; z, phi, r = " << InteractionOnLayer2->GetZ() << ";\t " << InteractionOnLayer2->GetPhi()   
+//                                                                                                     << ";\t " << InteractionOnLayer2->GetR() << "; " << endl;
+//        #endif
 
-        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 4.*real_delta_phi){
+        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 6.*real_delta_phi){
           Tracklet->SetZ1(InteractionOnLayer1->GetZ());
           Tracklet->SetZ2(InteractionOnLayer2->GetZ());
           double reconstructed_z = Tracklet->Intersection();
+
+          signal_vertex_check = 1;
+
           #if DEBUG == TRUE
-          cout << "Reconstructed vertex Z = " << reconstructed_z << " thanks to hit #" << i << " on the 1st detector layer and to hit #" << j << " on the 2nd detector layer" << endl;
+            lfile << "Reconstructed vertex Z = " << reconstructed_z << " thanks to hit #" << i << " on the 1st detector layer and to hit #" << j << " on the 2nd detector layer" << endl;
           #endif
+
+          vertex_counter++;
         }
 
 
-//        delete InteractionOnLayer2;
       }
-//      delete InteractionOnLayer1;
+
+      if(!signal_vertex_check) lfile << "!! NOT FOUND ANY VERTEX FOR HIT ON LAYER 1 #" << i << endl;
+
     }
+
+    #if DEBUG == TRUE
+      lfile << "Number of hits on the 1st layer = " << HitsL1->GetEntries() << endl; 
+      lfile << "Maximum number of intersections expected, based on the number of hits on the 2nd layer = " << HitsL2->GetEntries() << endl;
+      lfile << "Found " << vertex_counter << " intersections" << endl;
+      lfile << "Real vertex z = " << Vertex->GetZ() << endl;
+    #endif
+
   }
  
-//Clock stop and time print
-  Clock.Stop();
-  Clock.Print();
+
+//closing log file
+  lfile.close();
 
 //delete pointers
   delete Vertex;
   delete Tracklet;
+
+
+//Clock stop and time print
+  Clock.Stop();
+  Clock.Print();
 
 }

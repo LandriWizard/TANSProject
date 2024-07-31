@@ -58,10 +58,7 @@ MyRandom& MyRandom::operator=(const MyRandom& source){
   //Copy operator
 }
 
-int MyRandom::RndmMult() {
-  return dmMult->GetRandom();
-}
-
+//___________________________________________________________________________
 double MyRandom::RndmTheta(){
   double eta = dmEta->GetRandom();
   return 2.*TMath::ATan(TMath::Exp(-eta));

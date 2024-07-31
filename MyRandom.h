@@ -19,7 +19,9 @@ class MyRandom : public TRandom3 {
     virtual ~MyRandom();
     MyRandom& operator=(const MyRandom& source);
 
-    int RndmMult();
+    int RndmMult_FromDistribution(int) {return dmMult->GetRandom();}
+    int RndmMult_Uniform(int N_max) {return (int) (Rndm()*(N_max-1)) + 1;}
+    int RndmMult_Constant(int N) {return N;}
     double RndmTheta();
 
     static bool GetFlag() {return dmFileFlag;}
