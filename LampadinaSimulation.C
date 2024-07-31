@@ -112,7 +112,6 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
     //Vertex multiplicity generation
     Vertex->SetMult((RndmPtr->*RndmMult)(N));
 
-
     mult = Vertex->GetMult();
 
     #if DEBUG == TRUE

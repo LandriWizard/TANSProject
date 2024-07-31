@@ -74,6 +74,9 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
   for(int ev = 0; ev < tree->GetEntries(); ev++){
     tree->GetEvent(ev);
 
+    if(ev%100000 == 0) cout << "Event #" << ev << endl;
+
+
 //    #if DEBUG == TRUE
 //      cout << "Evento " << ev << "; Molteplicita= " << Vertex->GetMult() << endl;
 //      cout << "X,Y,Z = " << Vertex->GetX() << "; " << Vertex->GetY() << "; " << Vertex->GetZ() << endl;
