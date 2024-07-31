@@ -40,11 +40,9 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   double X,Y,Z;
   int mult;
 
-
+//Auxialiary objects
   MyPoint* Point = new MyPoint();
   MyVertex* Vertex = new MyVertex();
-
-
 
   //Generatori di vertice, inizio con la generazione di un vertice con molteplicità estratta da kinem.root
   //Ancora da inserire: molteplicità fissa e estratta da distribuzione uniforme
