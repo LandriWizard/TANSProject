@@ -16,7 +16,7 @@
 
 #define FALSE 0
 #define TRUE 1
-#define DEBUG FALSE
+#define DEBUG TRUE
 
 using namespace std;
 
@@ -100,6 +100,16 @@ void Reconstruction(const char* input_file = "simulation.root"){
           cout << "Interatcion on layer 2 #" << j << "; z, phi, r = " << InteractionOnLayer2->GetZ() << ";\t " << InteractionOnLayer2->GetPhi()   
                                                                                                      << ";\t " << InteractionOnLayer2->GetR() << "; " << endl;
         #endif
+
+        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 4.*real_delta_phi){
+          Tracklet->SetZ1(InteractionOnLayer1->GetZ());
+          Tracklet->SetZ2(InteractionOnLayer2->GetZ());
+          double reconstructed_z = Tracklet->Intersection();
+          #if DEBUG == TRUE
+          cout << "Reconstructed vertex Z = " << reconstructed_z << " thanks to hit #" << i << " on the 1st detector layer and to hit #" << j << " on the 2nd detector layer" << endl;
+          #endif
+        }
+
 
 //        delete InteractionOnLayer2;
       }
