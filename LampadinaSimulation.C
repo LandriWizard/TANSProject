@@ -21,8 +21,9 @@ using namespace std;
 
 //IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
 //MULTIPLICITY FLAG VALUES: 1 FOR EXTRACTION FROM GIVEN DISTIBUTION, 2 FOR CONSTANT VALUE, 3 FOR UNIFORM DISTRIBUTION
+//MULTISCATTERING FLAG VALUES: 0 FOR NO SCATTERING, 1 FOR SCATTERING
 
-void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_flag = 1, int multiscattering_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -40,6 +41,9 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   double X,Y,Z;
   int mult;
 
+//Physic constants
+  double multiscattering_angle = 0.0012;
+
 //Auxialiary objects
   MyPoint* Point = new MyPoint();
   MyVertex* Vertex = new MyVertex();
@@ -50,9 +54,9 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   MyPoint* Hit = new MyPoint(); //Points used to store the true position of where the particles hit the detectors
   MyParticle* Particle = new MyParticle(); //The particle that will be transported, contains the theta and phi of the trajectory
 
-  MyPhysics BeamPipe(3.,54.);
-  MyPhysics Layer1(4.,27.);
-  MyPhysics Layer2(7.,27.);
+  MyPhysics BeamPipe(3.,54.,multiscattering_angle);
+  MyPhysics Layer1(4.,27.,multiscattering_angle);
+  MyPhysics Layer2(7.,27.,multiscattering_angle);
 
   //Functors definition
   //Multiplicity extraction functor
@@ -62,6 +66,7 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   //MULTIPLICITY FLAG VALUES: 1 FOR EXTRACTION FROM GIVEN DISTIBUTION, 2 FOR CONSTANT VALUE, 3 FOR UNIFORM DISTRIBUTION
   switch (multiplicity_flag){
   case 1:
+    cout << "Extracting the multiplicity from a given distribution" << endl;
     RndmMult = &MyRandom::RndmMult_FromDistribution;
     dim = 70;
     break;
@@ -81,8 +86,27 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
     break;
   default:
     cout << "multiplicity_flag value choice not valid. 1 for extraction from given distribution, 2 for constant value, 3 for uniform distribution" << endl;
+    cout << "Default choice: extracting the multiplicity from a given distribution" << endl;
     RndmMult = &MyRandom::RndmMult_FromDistribution;
     dim = 70;
+    break;
+  }
+  //Multiscattering functor
+  MyParticle (MyPhysics::*ScatteringFunc)(MyParticle*);
+  switch (multiscattering_flag)
+  {
+  case 0:
+    cout << "Multiple scattering activated" << endl;
+    ScatteringFunc = &MyPhysics::MultipleScattering;
+    break;
+  case 1:
+    cout << "Multiple scattering not activated" << endl;
+    ScatteringFunc = &MyPhysics::NoScattering;
+    break;
+  default:
+    cout << "multiscattering_flag value choice not valid. 0 for no scattering, 1 for multiple scattering" << endl;
+    cout << "Default choice: multiple scattering activated" << endl;
+    ScatteringFunc = &MyPhysics::MultipleScattering;
     break;
   }
 
@@ -140,18 +164,17 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
       //Particle transport
       //Beam pipe interaction
       MyPoint* tmpPoint = new MyPoint(Vertex->GetX(),Vertex->GetY(),Vertex->GetZ());
-      *Hit = BeamPipe.Hit(tmpPoint, Particle);  //Particle transport
+      *Hit = BeamPipe.Transport(tmpPoint, Particle);  //Particle transport
       #if DEBUG == TRUE
         cout << "Hit position on the beam pipe = (" << Hit->GetX() << ", " <<
                                                        Hit->GetY() << ", " <<
                                                        Hit->GetZ() << "); Radius of the position = " << 
                                                        Hit->GetRadius() << endl;
       #endif
-
+      *Particle = (BeamPipe.*ScatteringFunc)(Particle);
 
       //First layer interaction
-      *Hit = Layer1.Hit(Hit, Particle); //Particle transport
-
+      *Hit = Layer1.Transport(Hit, Particle); //Particle transport
       #if DEBUG == TRUE
         cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
                                                                   Hit->GetY() << ", " <<
@@ -161,10 +184,11 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
 
       if(Hit->GetZ() > -1.*Layer1.GetH()/2. && Hit->GetZ() < Layer1.GetH()/2.){ //Check if Z is on the detector
 
+        *Particle = (Layer1.*ScatteringFunc)(Particle);
         new(L1Hit[j1])MySignal(Hit,j);
 
         //Second layer interaction
-        *Hit = Layer2.Hit(Hit, Particle);
+        *Hit = Layer2.Transport(Hit, Particle);
         #if DEBUG == TRUE
           cout << "Hit position on the second detector layer = (" << Hit->GetX() << ", " <<
                                                                     Hit->GetY() << ", " <<
@@ -176,8 +200,6 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
 
           new(L2Hit[j2])MySignal(Hit,j);
 
-
-
 //        #if DEBUG == TRUE
 //          printf("Evento %d - moltepl: %d - interazione: %d\n",i,mult,j+1);
 //          printf("x= %f ; y= %f; z= %f \n",Vertex->GetX(),Vertex->GetY(),Vertex->GetZ());
@@ -188,8 +210,6 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
 //          MySignal *tst2=(MySignal*)HitsOnL2->At(j2);
 //          std::cout << "Hit on L2 " << j2 << ") phi, z = " << tst2->GetPhi() << "; " << tst2->GetZ() << std::endl;
 //        #endif
-
-
 
           j2++;
 
