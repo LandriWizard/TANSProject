@@ -16,7 +16,7 @@
 
 #define FALSE 0
 #define TRUE 1
-#define DEBUG FALSE
+#define DEBUG TRUE
 
 using namespace std;
 
@@ -37,7 +37,10 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
   double delta_phi = TMath::ASin(3./7.*TMath::Sin(multiscattering_angle)); //I would like to use it in the while loop to "slice" the azimuth angle, cannot because its not a divisor of 2Pi
   int slice_number = 2*TMath::Pi()/delta_phi + 1; //number of azimuth angle slices
   double real_delta_phi = 2*TMath::Pi()/(double)slice_number; //actual value used to divide the azimuth angle, is a divisor of 2Pi; differs in the order ~10^-8 from delta_phi
- 
+
+  double reconstructed_z = 0;;
+  double residual_z;
+
   //Declaring "auxiliary" objects
   MyVertex* Vertex = new MyVertex();
   MyTracklet* Tracklet = new MyTracklet(inner_radius,outer_radius,0.,0.);
@@ -76,6 +79,10 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
     if(ev%100000 == 0) cout << "Event #" << ev << endl;
 
+    #if DEBUG == TRUE
+      lfile << "\nConsidering event #" << ev << endl;
+    #endif
+
 
 //    #if DEBUG == TRUE
 //      cout << "Evento " << ev << "; Molteplicita= " << Vertex->GetMult() << endl;
@@ -98,6 +105,8 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
     for(int i = 0; i < HitsL1->GetEntries(); i++){ //for cycle on 1st layer
 
+
+
       bool signal_vertex_check = 0; //bool to check if we find a vertex for each signal on layer 1
 
       MySignal* InteractionOnLayer1 = (MySignal*)HitsL1->At(i);
@@ -117,7 +126,7 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
         if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 6.*real_delta_phi){
           Tracklet->SetZ1(InteractionOnLayer1->GetZ());
           Tracklet->SetZ2(InteractionOnLayer2->GetZ());
-          double reconstructed_z = Tracklet->Intersection();
+          reconstructed_z = Tracklet->Intersection();
 
           signal_vertex_check = 1;
 
@@ -131,7 +140,11 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
       }
 
-      if(!signal_vertex_check) lfile << "!! NOT FOUND ANY VERTEX FOR HIT ON LAYER 1 #" << i << endl;
+      #if DEBUG == TRUE
+        if(!signal_vertex_check) lfile << "!! NOT FOUND ANY VERTEX FOR HIT ON LAYER 1 #" << i << endl;
+        if(signal_vertex_check) lfile << "Real vertex z cohordinate = " << Vertex->GetZ() << endl;
+        if(signal_vertex_check) lfile << "Residual = " << Vertex->GetZ() - reconstructed_z << endl;
+      #endif
 
     }
 
@@ -139,7 +152,6 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
       lfile << "Number of hits on the 1st layer = " << HitsL1->GetEntries() << endl; 
       lfile << "Maximum number of intersections expected, based on the number of hits on the 2nd layer = " << HitsL2->GetEntries() << endl;
       lfile << "Found " << vertex_counter << " intersections" << endl;
-      lfile << "Real vertex z = " << Vertex->GetZ() << endl;
     #endif
 
   }
