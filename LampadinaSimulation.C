@@ -59,7 +59,7 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   int dim = 0;  //Dimension of the TClonesArray storing the hits
   int N;
   int (MyRandom::*RndmMult) (int);
-    //MULTIPLICITY FLAG VALUES: 1 FOR EXTRACTION FROM GIVEN DISTIBUTION, 2 FOR CONSTANT VALUE, 3 FOR UNIFORM DISTRIBUTION
+  //MULTIPLICITY FLAG VALUES: 1 FOR EXTRACTION FROM GIVEN DISTIBUTION, 2 FOR CONSTANT VALUE, 3 FOR UNIFORM DISTRIBUTION
   switch (multiplicity_flag){
   case 1:
     RndmMult = &MyRandom::RndmMult_FromDistribution;
@@ -161,7 +161,7 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
 
       if(Hit->GetZ() > -1.*Layer1.GetH()/2. && Hit->GetZ() < Layer1.GetH()/2.){ //Check if Z is on the detector
 
-        new(L1Hit[j1])MySignal(Hit);
+        new(L1Hit[j1])MySignal(Hit,j);
 
         //Second layer interaction
         *Hit = Layer2.Hit(Hit, Particle);
@@ -174,7 +174,7 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
 
         if(Hit->GetZ() > -1.*Layer2.GetH()/2. && Hit->GetZ() < Layer2.GetH()/2.){ //Check if Z is on the detector
 
-          new(L2Hit[j2])MySignal(Hit);
+          new(L2Hit[j2])MySignal(Hit,j);
 
 
 

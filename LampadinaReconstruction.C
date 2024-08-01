@@ -131,7 +131,13 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
           signal_vertex_check = 1;
 
           #if DEBUG == TRUE
-            lfile << "Reconstructed vertex Z = " << reconstructed_z << " thanks to hit #" << i << " on the 1st detector layer and to hit #" << j << " on the 2nd detector layer" << endl;
+            if(signal_vertex_check){
+              lfile << "Reconstructed vertex Z = " << reconstructed_z << " thanks to hit #" << i << " on the 1st detector layer and to hit #" 
+                                                                                            << j << " on the 2nd detector layer" << endl;
+              if(InteractionOnLayer1->GetFlag() == InteractionOnLayer2->GetFlag())  lfile << "Vertex reconstructed using the same particles" << endl;
+              else lfile << "Vertex reconstructed using particle " << InteractionOnLayer1->GetFlag() << " on the 1st layer and particle "
+                                                                   << InteractionOnLayer2->GetFlag() << " on the second layer" << endl;
+            }
           #endif
 
           vertex_counter++;
@@ -142,8 +148,10 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
       #if DEBUG == TRUE
         if(!signal_vertex_check) lfile << "!! NOT FOUND ANY VERTEX FOR HIT ON LAYER 1 #" << i << endl;
-        if(signal_vertex_check) lfile << "Real vertex z cohordinate = " << Vertex->GetZ() << endl;
-        if(signal_vertex_check) lfile << "Residual = " << Vertex->GetZ() - reconstructed_z << endl;
+        if(signal_vertex_check){
+          lfile << "Real vertex z cohordinate = " << Vertex->GetZ() << endl;
+          lfile << "Residual = " << Vertex->GetZ() - reconstructed_z << endl;
+        }
       #endif
 
     }

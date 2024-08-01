@@ -19,14 +19,15 @@ MySignal::MySignal(): TObject(),
 }
 
 //___________________________________________________________________________
-MySignal::MySignal(double r, double z, double Phi): TObject(),
+MySignal::MySignal(double r, double z, double Phi, int particle_flag): TObject(),
   dmR(r),
   dmZ(z),
-  dmPhi(Phi){
+  dmPhi(Phi),
+  dmParticleFlag(particle_flag){
   //Standard constructor
 }
 
-MySignal::MySignal(MyPoint* Point): TObject()
+MySignal::MySignal(MyPoint* Point, int particle_flag): TObject()
 {
 
   double x = Point->GetX();
@@ -40,6 +41,7 @@ MySignal::MySignal(MyPoint* Point): TObject()
   dmR = r;
   dmZ = Point->GetZ();
   dmPhi = tmp;
+  dmParticleFlag = particle_flag;
 }
 
 //___________________________________________________________________________
@@ -48,6 +50,7 @@ MySignal::MySignal(const MySignal& source): TObject(source)
   dmR = source.dmR;
   dmZ = source.dmZ;
   dmPhi = source.dmPhi;
+  dmParticleFlag = source.dmParticleFlag;
   //copy constructor  
 }
 
