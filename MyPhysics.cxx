@@ -121,12 +121,18 @@ MyParticle MyPhysics::MultipleScattering(MyParticle* Particle){
 
     if(temp_cd[1] >= 0.) scattered_phi = TMath::ACos(temp_cd[0])/TMath::Sin(scattered_theta); 
     else scattered_phi = 2.*TMath::Pi() - TMath::ACos(temp_cd[0])/TMath::Sin(scattered_theta);
+
     return MyParticle(scattered_theta,scattered_phi);
 }
 
 //Smearing implementation
 MySignal MyPhysics::SmearingOn(MySignal* Signal){
+  int flag = Signal->GetFlag();
+  double r = Signal->GetR();
   double z_rec = Signal->GetZ() + gRandom->Gaus(0.,dmSmearingZ);
-  double rphi_rec = Signal->GetPhi() + gRandom->Gaus(0.,dmSmearingRPhi)/Signal->GetR() ;
+  double phi_rec = Signal->GetPhi() + gRandom->Gaus(0.,dmSmearingRPhi)/r;
+  if(phi_rec < 0.) phi_rec += 2.*TMath::Pi();
+  else if(phi_rec > 2.*TMath::Pi()) phi_rec -= 2.*TMath::Pi();
 
+  return MySignal(r,z_rec,phi_rec,flag);
 }
