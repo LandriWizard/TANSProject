@@ -14,15 +14,19 @@ ClassImp(MyPhysics)
 MyPhysics::MyPhysics(): TObject(),
   dmR(0.),
   dmH(0.),
-  dmScatteringTheta(0.){
+  dmScatteringTheta(0.),
+  dmSmearingZ(0.),
+  dmSmearingRPhi(0.){
   //Default constructor
 }
 
 //___________________________________________________________________________
-MyPhysics::MyPhysics(double R, double H, double scattering_theta): TObject(),
+MyPhysics::MyPhysics(double R, double H, double scattering_theta, double smearing_z, double smearing_rphi): TObject(),
   dmR(R),
   dmH(H),
-  dmScatteringTheta(scattering_theta){
+  dmScatteringTheta(scattering_theta),
+  dmSmearingZ(smearing_z),
+  dmSmearingRPhi(smearing_rphi){
   //Standard constructor
 }
 
@@ -32,6 +36,8 @@ MyPhysics::MyPhysics(const MyPhysics& source): TObject(source)
   dmR = source.dmR;
   dmH = source.dmH;
   dmScatteringTheta = source.dmScatteringTheta;
+  dmSmearingZ = source.dmSmearingZ;
+  dmSmearingRPhi = source.dmSmearingRPhi;
   //copy constructor  
 }
 
@@ -78,7 +84,7 @@ MyPoint MyPhysics::Transport(MyPoint* Point, MyParticle* Particle){
 
 }
 
-//Multiple Coulomb scattering implementations
+//Multiple Coulomb scattering implementation
 MyParticle MyPhysics::MultipleScattering(MyParticle* Particle){
     double theta = Particle->GetTheta();
     double phi = Particle->GetPhi();
@@ -116,4 +122,11 @@ MyParticle MyPhysics::MultipleScattering(MyParticle* Particle){
     if(temp_cd[1] >= 0.) scattered_phi = TMath::ACos(temp_cd[0])/TMath::Sin(scattered_theta); 
     else scattered_phi = 2.*TMath::Pi() - TMath::ACos(temp_cd[0])/TMath::Sin(scattered_theta);
     return MyParticle(scattered_theta,scattered_phi);
+}
+
+//Smearing implementation
+MySignal MyPhysics::SmearingOn(MySignal* Signal){
+  double z_rec = Signal->GetZ() + gRandom->Gaus(0.,dmSmearingZ);
+  double rphi_rec = Signal->GetPhi() + gRandom->Gaus(0.,dmSmearingRPhi)/Signal->GetR() ;
+
 }
