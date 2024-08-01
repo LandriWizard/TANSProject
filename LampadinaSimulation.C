@@ -22,8 +22,9 @@ using namespace std;
 //IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
 //MULTIPLICITY FLAG VALUES: 1 FOR EXTRACTION FROM GIVEN DISTIBUTION, 2 FOR CONSTANT VALUE, 3 FOR UNIFORM DISTRIBUTION
 //MULTISCATTERING FLAG VALUES: 0 FOR NO SCATTERING, 1 FOR SCATTERING
+//SMEARING FLAG VALUES: 0 FOR NO SMEARING, 1 FOR SMEARING
 
-void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_flag = 1, int multiscattering_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_flag = 1, int multiscattering_flag = 0, int smearing_flag = 0, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -42,7 +43,9 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   int mult;
 
 //Physic constants
-  double multiscattering_angle = 0.0012;
+  double multiscattering_angle = 0.0012; //mrad
+  double smearing_z = 0.012; //cm 
+  double smearing_rphi = 0.003; //cm
 
 //Auxialiary objects
   MyPoint* Point = new MyPoint();
@@ -54,9 +57,9 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   MyPoint* Hit = new MyPoint(); //Points used to store the true position of where the particles hit the detectors
   MyParticle* Particle = new MyParticle(); //The particle that will be transported, contains the theta and phi of the trajectory
 
-  MyPhysics BeamPipe(3.,54.,multiscattering_angle);
-  MyPhysics Layer1(4.,27.,multiscattering_angle);
-  MyPhysics Layer2(7.,27.,multiscattering_angle);
+  MyPhysics BeamPipe(3.,54.,multiscattering_angle,smearing_z,smearing_rphi);
+  MyPhysics Layer1(4.,27.,multiscattering_angle,smearing_z,smearing_rphi);
+  MyPhysics Layer2(7.,27.,multiscattering_angle,smearing_z,smearing_rphi);
 
   //Functors definition
   //Multiplicity extraction functor
@@ -96,17 +99,35 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   switch (multiscattering_flag)
   {
   case 0:
-    cout << "Multiple scattering activated" << endl;
-    ScatteringFunc = &MyPhysics::MultipleScattering;
-    break;
-  case 1:
     cout << "Multiple scattering not activated" << endl;
     ScatteringFunc = &MyPhysics::NoScattering;
+    break;
+    case 1:
+    cout << "Multiple scattering activated" << endl;
+    ScatteringFunc = &MyPhysics::MultipleScattering;
     break;
   default:
     cout << "multiscattering_flag value choice not valid. 0 for no scattering, 1 for multiple scattering" << endl;
     cout << "Default choice: multiple scattering activated" << endl;
     ScatteringFunc = &MyPhysics::MultipleScattering;
+    break;
+  }
+  //Smearing functor
+  MySignal (MyPhysics::*SmearingFunc)(MySignal*);
+  switch (smearing_flag)
+  {
+  case 0:
+    cout << "Smearing not activated" << endl;
+    SmearingFunc = &MyPhysics::NoSmearing;
+    break;
+  case 1:
+    cout << "Smearing activated" << endl;
+    SmearingFunc = &MyPhysics::SmearingOn;
+    break;
+  default:
+    cout << "smearing_flag value choice not valid. 0 for no smearing, 1 for smearing" << endl;
+    cout << "Default choice: smearing activated" << endl;
+    SmearingFunc = &MyPhysics::SmearingOn;
     break;
   }
 
@@ -185,7 +206,11 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
       if(Hit->GetZ() > -1.*Layer1.GetH()/2. && Hit->GetZ() < Layer1.GetH()/2.){ //Check if Z is on the detector
 
         *Particle = (Layer1.*ScatteringFunc)(Particle);
-        new(L1Hit[j1])MySignal(Hit,j);
+        MySignal* tempSignal = new MySignal(Hit,j);
+        *tempSignal = (Layer1.*SmearingFunc)(tempSignal);
+        L1Hit[j1] = tempSignal;
+
+//        new(L1Hit[j1])MySignal(Hit,j);
 
         //Second layer interaction
         *Hit = Layer2.Transport(Hit, Particle);
@@ -198,7 +223,10 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
 
         if(Hit->GetZ() > -1.*Layer2.GetH()/2. && Hit->GetZ() < Layer2.GetH()/2.){ //Check if Z is on the detector
 
-          new(L2Hit[j2])MySignal(Hit,j);
+          *tempSignal = (Layer2.*SmearingFunc)(tempSignal);
+          L2Hit[j2] = tempSignal;
+
+//          new(L2Hit[j2])MySignal(Hit,j);
 
 //        #if DEBUG == TRUE
 //          printf("Evento %d - moltepl: %d - interazione: %d\n",i,mult,j+1);
@@ -216,6 +244,8 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
         }
 
         j1++;
+
+//        delete tempSignal;
 
       }
 

@@ -21,10 +21,14 @@ class MyPhysics : public TObject{
     double GetR() const {return dmR;}
     double GetH() const {return dmH;}
     double GetScatteringAngle() const {return dmScatteringTheta;}
+    double GetSmearingZ() const {return dmSmearingZ;}
+    double GetSmearingRPhi() const {return dmSmearingRPhi;}
 
     void SetR(double r) {dmR = r;}
     void SetH(double h) {dmH = h;}
     void SetScatteringAngle(double theta) {dmScatteringTheta = theta;}
+    void SetSmearingZ(double smearing_z) {dmSmearingZ = smearing_z;}
+    void SetSmearingRPhi(double smearing_rphi) {dmSmearingRPhi = smearing_rphi;}
 
     MyPoint Transport(MyPoint* Point, MyParticle* Particle);
 

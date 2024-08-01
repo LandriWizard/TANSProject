@@ -123,7 +123,7 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 //                                                                                                     << ";\t " << InteractionOnLayer2->GetR() << "; " << endl;
 //        #endif
 
-        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 6.*real_delta_phi){
+        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 0.004/*2.*real_delta_phi*/){
           Tracklet->SetZ1(InteractionOnLayer1->GetZ());
           Tracklet->SetZ2(InteractionOnLayer2->GetZ());
           reconstructed_z = Tracklet->Intersection();
