@@ -17,7 +17,7 @@ class MyPoint : public TObject
     double GetX() const {return dmX;} 
     double GetY() const {return dmY;}
     double GetZ() const {return dmZ;}
-    double GetRadius() const;
+    double GetRadiusXY() const;
 
     void SetX(double x) {dmX = x;}
     void SetY(double y) {dmY = y;}

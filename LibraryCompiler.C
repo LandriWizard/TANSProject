@@ -2,25 +2,24 @@
 #include <TROOT.h>
 #include <TSystem.h> 
 
-void LibraryCompiler() {
+void LibraryCompiler(TString compiling_flag="fast") {
+
+  TString Compiling_option;
+  if(compiling_flag.Contains("force")) Compiling_option = "kfg";
+  else Compiling_option = "kg";
 
   //Librerie utili per la simulazione
-//  gROOT->LoadMacro("MyPoint.cxx");
-//  gROOT->LoadMacro("MyVertex.cxx");
-//  gROOT->LoadMacro("MyRandom.cxx");
-//  gROOT->LoadMacro("MyParticle.cxx");
-//  gROOT->LoadMacro("MyPhysics.cxx");
 
-  gSystem->CompileMacro("MyPoint.cxx","kfg");
-  gSystem->CompileMacro("MyVertex.cxx","kfg");
-  gSystem->CompileMacro("MyRandom.cxx","kfg");
-  gSystem->CompileMacro("MyParticle.cxx","kfg");
-  gSystem->CompileMacro("MySignal.cxx","kfg");
-  gSystem->CompileMacro("MyPhysics.cxx","kfg");
-  gSystem->CompileMacro("MyTracklet.cxx","kfg");
+  gSystem->CompileMacro("MyPoint.cxx",Compiling_option.Data());
+  gSystem->CompileMacro("MyVertex.cxx",Compiling_option.Data());
+  gSystem->CompileMacro("MyRandom.cxx",Compiling_option.Data());
+  gSystem->CompileMacro("MyParticle.cxx",Compiling_option.Data());
+  gSystem->CompileMacro("MySignal.cxx",Compiling_option.Data());
+  gSystem->CompileMacro("MyPhysics.cxx",Compiling_option.Data());
+  gSystem->CompileMacro("MyTracklet.cxx",Compiling_option.Data());
 
-  gSystem->CompileMacro("LampadinaSimulation.C","kfg");
-  gSystem->CompileMacro("LampadinaReconstruction.C","kfg");
+  gSystem->CompileMacro("LampadinaSimulation.C",Compiling_option.Data());
+  gSystem->CompileMacro("LampadinaReconstruction.C",Compiling_option.Data());
 
 
 

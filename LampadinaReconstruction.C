@@ -85,7 +85,7 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
 
 //    #if DEBUG == TRUE
-//      cout << "Evento " << ev << "; Molteplicita= " << Vertex->GetMult() << endl;
+//      cout << "Evento " << ev << "; Molteplicita = " << Vertex->GetMult() << endl;
 //      cout << "X,Y,Z = " << Vertex->GetX() << "; " << Vertex->GetY() << "; " << Vertex->GetZ() << endl;
 //      int num1 = HitsL1->GetEntries();
 //      int num2 = HitsL2->GetEntries();
@@ -123,7 +123,7 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 //                                                                                                     << ";\t " << InteractionOnLayer2->GetR() << "; " << endl;
 //        #endif
 
-        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 0.004/*2.*real_delta_phi*/){
+        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < /*0.004*/6.*real_delta_phi){
           Tracklet->SetZ1(InteractionOnLayer1->GetZ());
           Tracklet->SetZ2(InteractionOnLayer2->GetZ());
           reconstructed_z = Tracklet->Intersection();
@@ -158,7 +158,7 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
     #if DEBUG == TRUE
       lfile << "Number of hits on the 1st layer = " << HitsL1->GetEntries() << endl; 
-      lfile << "Maximum number of intersections expected, based on the number of hits on the 2nd layer = " << HitsL2->GetEntries() << endl;
+      lfile << "Number of hits on the 2nd layer = " << HitsL2->GetEntries() << endl;
       lfile << "Found " << vertex_counter << " intersections" << endl;
     #endif
 

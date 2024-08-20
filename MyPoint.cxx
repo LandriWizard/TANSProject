@@ -47,6 +47,7 @@ MyPoint& MyPoint::operator=(const MyPoint& source){
 }
 
 //___________________________________________________________________________
-double MyPoint::GetRadius() const {
+double MyPoint::GetRadiusXY() const {
   return TMath::Sqrt(dmX*dmX + dmY*dmY);
 }
+

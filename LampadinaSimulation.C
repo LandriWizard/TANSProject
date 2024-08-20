@@ -24,7 +24,7 @@ using namespace std;
 //MULTISCATTERING FLAG VALUES: 0 FOR NO SCATTERING, 1 FOR SCATTERING
 //SMEARING FLAG VALUES: 0 FOR NO SMEARING, 1 FOR SMEARING
 
-void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_flag = 1, int multiscattering_flag = 0, int smearing_flag = 0, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_flag = 1, int multiscattering_flag = 1, int smearing_flag = 0, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -43,7 +43,7 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
   int mult;
 
 //Physic constants
-  double multiscattering_angle = 0.0012; //mrad
+  double multiscattering_angle = 0.0012/TMath::Sqrt(2); //mrad
   double smearing_z = 0.012; //cm 
   double smearing_rphi = 0.003; //cm
 
@@ -182,6 +182,9 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
       Particle->SetTheta(RndmPtr->RndmTheta());
       Particle->SetPhi(RndmPtr->Uniform(0.,2.*TMath::Pi()));
 
+      double first_theta = Particle->GetTheta();
+      double first_phi = Particle->GetPhi();
+
       //Particle transport
       //Beam pipe interaction
       MyPoint* tmpPoint = new MyPoint(Vertex->GetX(),Vertex->GetY(),Vertex->GetZ());
@@ -190,9 +193,15 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
         cout << "Hit position on the beam pipe = (" << Hit->GetX() << ", " <<
                                                        Hit->GetY() << ", " <<
                                                        Hit->GetZ() << "); Radius of the position = " << 
-                                                       Hit->GetRadius() << endl;
+                                                       Hit->GetRadiusXY() << endl;
       #endif
       *Particle = (BeamPipe.*ScatteringFunc)(Particle);
+
+      double after_bp_theta = Particle->GetTheta();
+      double after_bp_phi = Particle->GetPhi();
+
+      cout << "Difference in theta after beam pipe = " << after_bp_theta - first_theta << endl;
+      cout << "Difference in phi after beam pipe = " << after_bp_phi - first_phi << endl;
 
       //First layer interaction
       *Hit = Layer1.Transport(Hit, Particle); //Particle transport
@@ -200,15 +209,15 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
         cout << "Hit position on the first detector layer = (" << Hit->GetX() << ", " <<
                                                                   Hit->GetY() << ", " <<
                                                                   Hit->GetZ() << "); Radius of the position = " << 
-                                                                  Hit->GetRadius() << endl;
+                                                                  Hit->GetRadiusXY() << endl;
       #endif
 
       if(Hit->GetZ() > -1.*Layer1.GetH()/2. && Hit->GetZ() < Layer1.GetH()/2.){ //Check if Z is on the detector
 
         *Particle = (Layer1.*ScatteringFunc)(Particle);
-        MySignal* tempSignal = new MySignal(Hit,j);
-        *tempSignal = (Layer1.*SmearingFunc)(tempSignal);
-        L1Hit[j1] = tempSignal;
+        MySignal* tempSignal1 = new MySignal(Hit,j);
+        *tempSignal1 = (Layer1.*SmearingFunc)(tempSignal1);
+        new(L1Hit[j1]) MySignal(*tempSignal1);
 
 //        new(L1Hit[j1])MySignal(Hit,j);
 
@@ -218,26 +227,15 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
           cout << "Hit position on the second detector layer = (" << Hit->GetX() << ", " <<
                                                                     Hit->GetY() << ", " <<
                                                                     Hit->GetZ() << "); Radius of the position = " << 
-                                                                    Hit->GetRadius() << endl;
+                                                                    Hit->GetRadiusXY() << endl;
         #endif
 
         if(Hit->GetZ() > -1.*Layer2.GetH()/2. && Hit->GetZ() < Layer2.GetH()/2.){ //Check if Z is on the detector
 
-          *tempSignal = (Layer2.*SmearingFunc)(tempSignal);
-          L2Hit[j2] = tempSignal;
+          MySignal* tempSignal2 = new MySignal(Hit,j);
+          *tempSignal2 = (Layer2.*SmearingFunc)(tempSignal2);
+          new(L2Hit[j2]) MySignal(*tempSignal2);
 
-//          new(L2Hit[j2])MySignal(Hit,j);
-
-//        #if DEBUG == TRUE
-//          printf("Evento %d - moltepl: %d - interazione: %d\n",i,mult,j+1);
-//          printf("x= %f ; y= %f; z= %f \n",Vertex->GetX(),Vertex->GetY(),Vertex->GetZ());
-//          printf("Entries nel TClonesArray1: %d\n",HitsOnL1->GetEntries());
-//          MySignal *tst1=(MySignal*)HitsOnL1->At(j1);
-//          std::cout<< "Hit on L1 " << j1 << ") phi, z = " << tst1->GetPhi() << "; " << tst1->GetZ() << std::endl;
-//          printf("Entries nel TClonesArray2: %d\n",HitsOnL2->GetEntries());
-//          MySignal *tst2=(MySignal*)HitsOnL2->At(j2);
-//          std::cout << "Hit on L2 " << j2 << ") phi, z = " << tst2->GetPhi() << "; " << tst2->GetZ() << std::endl;
-//        #endif
 
           j2++;
 

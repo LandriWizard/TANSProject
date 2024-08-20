@@ -32,7 +32,7 @@ MySignal::MySignal(MyPoint* Point, int particle_flag): TObject()
 
   double x = Point->GetX();
   double y = Point->GetY();
-  double r = Point->GetRadius();
+  double r = Point->GetRadiusXY();
   double tmp;
 
   if(y >= 0.) tmp = TMath::ACos(x/r);
