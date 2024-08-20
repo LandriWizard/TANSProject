@@ -24,7 +24,7 @@ using namespace std;
 //MULTISCATTERING FLAG VALUES: 0 FOR NO SCATTERING, 1 FOR SCATTERING
 //SMEARING FLAG VALUES: 0 FOR NO SMEARING, 1 FOR SMEARING
 
-void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_flag = 1, int multiscattering_flag = 1, int smearing_flag = 0, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_flag = 2, int multiscattering_flag = 1, int smearing_flag = 0, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -215,11 +215,16 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
       if(Hit->GetZ() > -1.*Layer1.GetH()/2. && Hit->GetZ() < Layer1.GetH()/2.){ //Check if Z is on the detector
 
         *Particle = (Layer1.*ScatteringFunc)(Particle);
+
+        double after_l1_theta = Particle->GetTheta();
+        double after_l1_phi = Particle->GetPhi();
+
+        cout << "Difference in theta after layer 1 = " << after_l1_theta - after_bp_theta << endl;
+        cout << "Difference in phi after layer 1 = " << after_l1_phi - after_bp_phi << endl;
+
         MySignal* tempSignal1 = new MySignal(Hit,j);
         *tempSignal1 = (Layer1.*SmearingFunc)(tempSignal1);
         new(L1Hit[j1]) MySignal(*tempSignal1);
-
-//        new(L1Hit[j1])MySignal(Hit,j);
 
         //Second layer interaction
         *Hit = Layer2.Transport(Hit, Particle);
