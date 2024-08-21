@@ -16,7 +16,8 @@
 
 #define FALSE 0
 #define TRUE 1
-#define DEBUG TRUE
+#define DEBUG FALSE
+#define LOGGING FALSE
 
 using namespace std;
 
@@ -56,8 +57,10 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 		return;
 	}
 
-  //Opening log file
-  ofstream lfile(log_file);
+  #if LOGGING
+    //Opening log file
+    ofstream lfile(log_file);
+  #endif
 
   //Lettura TTree  e branch
   TTree *tree = (TTree*)infile.Get("T");
@@ -79,12 +82,12 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
     if(ev%100000 == 0) cout << "Event #" << ev << endl;
 
-    #if DEBUG == TRUE
+    #if LOGGING
       lfile << "\nConsidering event #" << ev << endl;
     #endif
 
 
-//    #if DEBUG == TRUE
+//    #if DEBUG
 //      cout << "Evento " << ev << "; Molteplicita = " << Vertex->GetMult() << endl;
 //      cout << "X,Y,Z = " << Vertex->GetX() << "; " << Vertex->GetY() << "; " << Vertex->GetZ() << endl;
 //      int num1 = HitsL1->GetEntries();
@@ -110,18 +113,12 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
       bool signal_vertex_check = 0; //bool to check if we find a vertex for each signal on layer 1
 
       MySignal* InteractionOnLayer1 = (MySignal*)HitsL1->At(i);
-//      #if DEBUG == TRUE
-//        lfile << "Interatcion on layer 1 #" << i << "; z, phi, r = " << InteractionOnLayer1->GetZ() << ";\t " << InteractionOnLayer1->GetPhi() 
-//                                                                                                   << ";\t " << InteractionOnLayer1->GetR() << "; " << endl;
-//      #endif
+
       Tracklet->SetZ1(InteractionOnLayer1->GetZ()); //insertion of Z1 in the tracklet
 
       for(int j = 0; j < HitsL2->GetEntries(); j++){  //for cycle on 2nd layer
         MySignal* InteractionOnLayer2 = (MySignal*)HitsL2->At(j);
-//        #if DEBUG == TRUE
-//          lfile << "Interatcion on layer 2 #" << j << "; z, phi, r = " << InteractionOnLayer2->GetZ() << ";\t " << InteractionOnLayer2->GetPhi()   
-//                                                                                                     << ";\t " << InteractionOnLayer2->GetR() << "; " << endl;
-//        #endif
+
 
         if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < /*0.004*/6.*real_delta_phi){
           Tracklet->SetZ1(InteractionOnLayer1->GetZ());
@@ -130,7 +127,7 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
           signal_vertex_check = 1;
 
-          #if DEBUG == TRUE
+          #if LOGGING
             if(signal_vertex_check){
               lfile << "Reconstructed vertex Z = " << reconstructed_z << " thanks to hit #" << i << " on the 1st detector layer and to hit #" 
                                                                                             << j << " on the 2nd detector layer" << endl;
@@ -146,7 +143,7 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
       }
 
-      #if DEBUG == TRUE
+      #if LOGGING
         if(!signal_vertex_check) lfile << "!! NOT FOUND ANY VERTEX FOR HIT ON LAYER 1 #" << i << endl;
         if(signal_vertex_check){
           lfile << "Real vertex z cohordinate = " << Vertex->GetZ() << endl;
@@ -156,7 +153,7 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
     }
 
-    #if DEBUG == TRUE
+    #if LOGGING
       lfile << "Number of hits on the 1st layer = " << HitsL1->GetEntries() << endl; 
       lfile << "Number of hits on the 2nd layer = " << HitsL2->GetEntries() << endl;
       lfile << "Found " << vertex_counter << " intersections" << endl;
@@ -164,9 +161,10 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
   }
  
-
-//closing log file
-  lfile.close();
+  #if LOGGING
+    //closing log file
+    lfile.close();
+  #endif
 
 //delete pointers
   delete Vertex;

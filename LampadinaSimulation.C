@@ -16,6 +16,7 @@
 #define TRUE 1
 #define FALSE 0
 #define DEBUG FALSE
+#define MULTISCATTERING_DEBUG FALSE
 
 using namespace std;
 
@@ -24,7 +25,7 @@ using namespace std;
 //MULTISCATTERING FLAG VALUES: 0 FOR NO SCATTERING, 1 FOR SCATTERING
 //SMEARING FLAG VALUES: 0 FOR NO SMEARING, 1 FOR SMEARING
 
-void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_flag = 2, int multiscattering_flag = 1, int smearing_flag = 0, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_flag = 1, int multiscattering_flag = 1, int smearing_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -182,8 +183,10 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
       Particle->SetTheta(RndmPtr->RndmTheta());
       Particle->SetPhi(RndmPtr->Uniform(0.,2.*TMath::Pi()));
 
-      double first_theta = Particle->GetTheta();
-      double first_phi = Particle->GetPhi();
+      #if MULTISCATTERING_DEBUG == TRUE
+        double first_theta = Particle->GetTheta();
+        double first_phi = Particle->GetPhi();
+      #endif
 
       //Particle transport
       //Beam pipe interaction
@@ -196,12 +199,12 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
                                                        Hit->GetRadiusXY() << endl;
       #endif
       *Particle = (BeamPipe.*ScatteringFunc)(Particle);
-
-      double after_bp_theta = Particle->GetTheta();
-      double after_bp_phi = Particle->GetPhi();
-
-      cout << "Difference in theta after beam pipe = " << after_bp_theta - first_theta << endl;
-      cout << "Difference in phi after beam pipe = " << after_bp_phi - first_phi << endl;
+      #if MULTISCATTERING_DEBUG == TRUE
+        double after_bp_theta = Particle->GetTheta();
+        double after_bp_phi = Particle->GetPhi();
+        cout << "Difference in theta after beam pipe = " << after_bp_theta - first_theta << endl;
+        cout << "Difference in phi after beam pipe = " << after_bp_phi - first_phi << endl;
+      #endif
 
       //First layer interaction
       *Hit = Layer1.Transport(Hit, Particle); //Particle transport
@@ -215,12 +218,12 @@ void Simulation(int N_exp = 1e0, unsigned int seed = 69420, int multiplicity_fla
       if(Hit->GetZ() > -1.*Layer1.GetH()/2. && Hit->GetZ() < Layer1.GetH()/2.){ //Check if Z is on the detector
 
         *Particle = (Layer1.*ScatteringFunc)(Particle);
-
+        #if MULTISCATTERING_DEBUG == TRUE
         double after_l1_theta = Particle->GetTheta();
         double after_l1_phi = Particle->GetPhi();
-
         cout << "Difference in theta after layer 1 = " << after_l1_theta - after_bp_theta << endl;
         cout << "Difference in phi after layer 1 = " << after_l1_phi - after_bp_phi << endl;
+        #endif
 
         MySignal* tempSignal1 = new MySignal(Hit,j);
         *tempSignal1 = (Layer1.*SmearingFunc)(tempSignal1);
