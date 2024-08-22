@@ -17,7 +17,7 @@
 #define FALSE 0
 #define TRUE 1
 #define DEBUG FALSE
-#define LOGGING FALSE
+#define LOGGING TRUE
 
 using namespace std;
 
@@ -47,8 +47,8 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
   MyTracklet* Tracklet = new MyTracklet(inner_radius,outer_radius,0.,0.);
   
   // Dichiarazione TClonesArray
-  TClonesArray *HitsL1 = new TClonesArray("MySignal",100);
-  TClonesArray *HitsL2 = new TClonesArray("MySignal",100);
+  TClonesArray *HitsL1 = new TClonesArray("MySignal",70);
+  TClonesArray *HitsL2 = new TClonesArray("MySignal",70);
  
   //Apertura file di input
   TFile infile(input_file);
@@ -106,31 +106,30 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
 
     int vertex_counter = 0;
 
-    for(int i = 0; i < HitsL1->GetEntries(); i++){ //for cycle on 1st layer
+    for(int i = 0; i < HitsL2->GetEntries(); i++){ //for cycle on 1st layer
 
 
 
       bool signal_vertex_check = 0; //bool to check if we find a vertex for each signal on layer 1
 
-      MySignal* InteractionOnLayer1 = (MySignal*)HitsL1->At(i);
+      MySignal* InteractionOnLayer2 = (MySignal*)HitsL2->At(i);
 
-      Tracklet->SetZ1(InteractionOnLayer1->GetZ()); //insertion of Z1 in the tracklet
+      Tracklet->SetZ1(InteractionOnLayer2->GetZ()); //insertion of Z2 in the tracklet
 
-      for(int j = 0; j < HitsL2->GetEntries(); j++){  //for cycle on 2nd layer
-        MySignal* InteractionOnLayer2 = (MySignal*)HitsL2->At(j);
+      for(int j = 0; j < HitsL1->GetEntries(); j++){  //for cycle on 2nd layer
+        MySignal* InteractionOnLayer1 = (MySignal*)HitsL1->At(j);
 
 
         if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < /*0.004*/6.*real_delta_phi){
-          Tracklet->SetZ1(InteractionOnLayer1->GetZ());
-          Tracklet->SetZ2(InteractionOnLayer2->GetZ());
+          Tracklet->SetZ1(InteractionOnLayer1->GetZ()); //insertion of Z1 in the tracklet
           reconstructed_z = Tracklet->Intersection();
 
           signal_vertex_check = 1;
 
           #if LOGGING
             if(signal_vertex_check){
-              lfile << "Reconstructed vertex Z = " << reconstructed_z << " thanks to hit #" << i << " on the 1st detector layer and to hit #" 
-                                                                                            << j << " on the 2nd detector layer" << endl;
+              lfile << "Reconstructed vertex Z = " << reconstructed_z << " thanks to hit #" << j << " on the 1st detector layer and to hit #" 
+                                                                                            << i << " on the 2nd detector layer" << endl;
               if(InteractionOnLayer1->GetFlag() == InteractionOnLayer2->GetFlag())  lfile << "Vertex reconstructed using the same particles" << endl;
               else lfile << "Vertex reconstructed using particle " << InteractionOnLayer1->GetFlag() << " on the 1st layer and particle "
                                                                    << InteractionOnLayer2->GetFlag() << " on the second layer" << endl;
@@ -144,7 +143,7 @@ void Reconstruction(const char* input_file = "simulation.root", const char* log_
       }
 
       #if LOGGING
-        if(!signal_vertex_check) lfile << "!! NOT FOUND ANY VERTEX FOR HIT ON LAYER 1 #" << i << endl;
+        if(!signal_vertex_check) lfile << "!! NOT FOUND ANY VERTEX FOR HIT ON LAYER 2 #" << i << endl;
         if(signal_vertex_check){
           lfile << "Real vertex z cohordinate = " << Vertex->GetZ() << endl;
           lfile << "Residual = " << Vertex->GetZ() - reconstructed_z << endl;

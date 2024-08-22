@@ -37,9 +37,6 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   TStopwatch Clock;
   Clock.Start();
 
-//Output file declaration
-  TFile outfile(output_file,"RECREATE");
-
   double X,Y,Z;
   int mult;
 
@@ -62,6 +59,9 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   MyPhysics Layer1(4.,27.,multiscattering_angle,smearing_z,smearing_rphi);
   MyPhysics Layer2(7.,27.,multiscattering_angle,smearing_z,smearing_rphi);
 
+//Object used to store the multiplicity generation method, used to differentiate the histograms in the Reconstruction
+  TObject Multiplicity_Generation;
+
   //Functors definition
   //Multiplicity extraction functor
   int dim = 0;  //Dimension of the TClonesArray storing the hits
@@ -80,6 +80,7 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
     cout << "You chose to have " << N << " particles for each vertex" << endl;
     RndmMult = &MyRandom::RndmMult_Constant;
     dim = N;
+    Multiplicity_Generation.SetUniqueID(N);
     break;
   case 3: 
     cout << "What is the wanted maximum number of particles for each vertex? ";
@@ -87,12 +88,14 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
     cout << "You chose to have a maximum of " << N << " particles for each vertex" << endl;
     RndmMult = &MyRandom::RndmMult_Uniform;
     dim = N/2 + 1;
+    Multiplicity_Generation.SetUniqueID(-N);
     break;
   default:
     cout << "multiplicity_flag value choice not valid. 1 for extraction from given distribution, 2 for constant value, 3 for uniform distribution" << endl;
     cout << "Default choice: extracting the multiplicity from a given distribution" << endl;
     RndmMult = &MyRandom::RndmMult_FromDistribution;
     dim = 70;
+    Multiplicity_Generation.SetUniqueID(0);
     break;
   }
   //Multiscattering functor
@@ -131,6 +134,10 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
     SmearingFunc = &MyPhysics::SmearingOn;
     break;
   }
+
+//Output file declaration
+  TFile outfile(output_file,"RECREATE");
+  Multiplicity_Generation.Write("Multiplicity_Generation");
 
   TTree* Tree = new TTree("T","Tree with 3 branches");
   TClonesArray* HitsOnL1 = new TClonesArray("MySignal",dim);

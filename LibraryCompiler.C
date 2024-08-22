@@ -18,6 +18,8 @@ void LibraryCompiler(TString compiling_flag="fast") {
   gSystem->CompileMacro("MyPhysics.cxx",Compiling_option.Data());
   gSystem->CompileMacro("MyTracklet.cxx",Compiling_option.Data());
 
+  gSystem->CompileMacro("DeltaPhi_Extimation.C",Compiling_option.Data());
+
   gSystem->CompileMacro("LampadinaSimulation.C",Compiling_option.Data());
   gSystem->CompileMacro("LampadinaReconstruction.C",Compiling_option.Data());
 
