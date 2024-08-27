@@ -5,7 +5,8 @@
     "TestFile.C": "cpp",
     "LibraryCompiler.C": "cpp",
     "iostream": "cpp",
-    "ScatteringTest.C": "cpp"
+    "ScatteringTest.C": "cpp",
+    "DeltaPhi_Extimation.C": "cpp"
   },
   "C_Cpp.default.compilerPath": "/usr/bin/g++-9",
   "C_Cpp.inlayHints.referenceOperator.showSpace": false

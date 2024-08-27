@@ -66,5 +66,5 @@ MySignal& MySignal::operator=(const MySignal& source){
     this->~MySignal();
     new(this) MySignal(source);
     return *this;
-    //copy operator
+    //Copy operator
 }

@@ -16,6 +16,7 @@ void LibraryCompiler(TString compiling_flag="fast") {
   gSystem->CompileMacro("MyParticle.cxx",Compiling_option.Data());
   gSystem->CompileMacro("MySignal.cxx",Compiling_option.Data());
   gSystem->CompileMacro("MyPhysics.cxx",Compiling_option.Data());
+  gSystem->CompileMacro("MyRunningWindow.cxx",Compiling_option.Data());
   gSystem->CompileMacro("MyTracklet.cxx",Compiling_option.Data());
 
   gSystem->CompileMacro("DeltaPhi_Extimation.C",Compiling_option.Data());

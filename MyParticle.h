@@ -1,11 +1,9 @@
 #ifndef MYPARTICLE_H
 #define MYPARTICLE_H
 
-
 #include "TObject.h"
 
-class MyParticle : public TObject
-{
+class MyParticle : public TObject{
 
   public:
 
