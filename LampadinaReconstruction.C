@@ -30,7 +30,7 @@ using std::vector;
 
 //IMPORTANT: LENGHTS ARE IN CM, ANGLES IN RAD
 
-void Reconstruction(double window_size = 0.35, double window_step = 0.175, const char* input_file = "simulation.root", const char* log_file = "reconstruction_log.txt"){
+void Reconstruction(double window_size = 0.35, double window_step = 0.175, const char* input_file = "simulation.root", const char* output_file = "analysis.root"){
 
 //Stopwatch declaration and start
   TStopwatch Clock;
@@ -71,9 +71,12 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 		return;
 	}
 
+  //Opening output file
+  TFile outfile(output_file,"RECREATE");
+
   #if LOGGING
     //Opening log file
-    ofstream lfile(log_file);
+    ofstream lfile("reconstruction_log.txt");
   #endif
 
   #if SORTING_DEBUG
@@ -265,6 +268,9 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   TCanvas *cResidual = new TCanvas("Residual","Residual",800,600);
   hResidual->Draw();
 
+//Writing and saving the output file
+  outfile.Write();
+  outfile.Close();
 
   #if LOGGING
     //closing log file

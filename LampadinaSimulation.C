@@ -287,9 +287,6 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   outfile.Write();
   outfile.Close();
 
-//Stopwatch stop and time print
-  Clock.Stop();
-  Clock.Print();
 
 //Deallocating pointers
   delete Point;
@@ -297,11 +294,8 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   delete Hit;
   delete Particle;
 
-//NECESSARIO AGGIUNGERE SMEARING E MULTISCATTERING
-//AGGIUNGERE FUNTORI PER MOTLEPLICITA' FISSA E DA DISTRIBUZIONE UNIFORME
-//OPPORTUNO INIZIARE ANCHE LA RICOSTRUZIONE
-
-//SCATTERING MULTIPLO: 1.2 MILLIRADIANTI PER SOVRASTIMARE IL FENOMENO
-
+//Stopwatch stop and time print
+  Clock.Stop();
+  Clock.Print();
 
 }
