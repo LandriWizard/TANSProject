@@ -20,8 +20,10 @@
 
 #define FALSE 0
 #define TRUE 1
+#define PRINT_EVENT FALSE
 #define DEBUG FALSE
 #define LOGGING FALSE
+#define SORTING_DEBUG FALSE
 
 using namespace std;
 using std::vector;
@@ -74,6 +76,10 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     ofstream lfile(log_file);
   #endif
 
+  #if SORTING_DEBUG
+    ofstream sfile("sorting_debug.txt");
+  #endif
+
   //Reading the multiplicity generation method
   TObject* Multiplicity_Generation = (TObject*)infile.Get("Multiplicity_Generation");
   int N_mult = Multiplicity_Generation->GetUniqueID();
@@ -110,15 +116,16 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   b2->SetAddress(&HitsL1);
   b3->SetAddress(&HitsL2);
 
-  //Declaring vectors to store the reconstructed z values
-  vector<double> reconstructed_z_values;
 
 
   //Loop ont the tree entries
   for(int ev = 0; ev < tree->GetEntries(); ev++){
     tree->GetEvent(ev);
 
-    /*if(ev%100000 == 0)*/ cout << "Event #" << ev << endl;
+    //Declaring vectors to store the reconstructed z values
+    vector<double> reconstructed_z_values;
+
+    if(ev%100000 == 0) cout << "Event #" << ev << endl;
 
     #if LOGGING
       lfile << "\nConsidering event #" << ev << endl;
@@ -126,22 +133,22 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     #endif
 
 
-//    #if DEBUG
-//      cout << "Evento " << ev << "; Molteplicita = " << Vertex->GetMult() << endl;
-//      cout << "X,Y,Z = " << Vertex->GetX() << "; " << Vertex->GetY() << "; " << Vertex->GetZ() << endl;
-//      int num1 = HitsL1->GetEntries();
-//      int num2 = HitsL2->GetEntries();
-//      cout << "Numero di elementi nel primo TClonesArray " << num1 << endl;
-//      cout << "Numero di elementi nel secondo TClonesArray " << num2 << endl;
-//      for (int j=0; j < num1; j++){
-//        MySignal *tst1=(MySignal*)HitsL1->At(j);
-//        cout << "Hit on L1 # " << j << ") z, phi, r = " << tst1->GetZ() << ";\t " << tst1->GetPhi() << ";\t " << tst1->GetR() << ";\t " << endl;
-//      }
-//      for (int j=0; j < num2; j++){
-//        MySignal *tst2=(MySignal*)HitsL2->At(j);
-//        cout << "Hit on L2 # " << j << ") z, phi, r = " << tst2->GetZ() << ";\t " << tst2->GetPhi() << ";\t " << tst2->GetR() << ";\t " << endl;
-//      }
-//    #endif
+    #if PRINT_EVENT
+      cout << "Evento " << ev << "; Molteplicita = " << Vertex->GetMult() << endl;
+      cout << "X,Y,Z = " << Vertex->GetX() << "; " << Vertex->GetY() << "; " << Vertex->GetZ() << endl;
+      int num1 = HitsL1->GetEntries();
+      int num2 = HitsL2->GetEntries();
+      cout << "Numero di elementi nel primo TClonesArray " << num1 << endl;
+      cout << "Numero di elementi nel secondo TClonesArray " << num2 << endl;
+      for (int j=0; j < num1; j++){
+        MySignal *tst1=(MySignal*)HitsL1->At(j);
+        cout << "Hit on L1 # " << j << ") z, phi, r = " << tst1->GetZ() << ";\t " << tst1->GetPhi() << ";\t " << tst1->GetR() << ";\t " << endl;
+      }
+      for (int j=0; j < num2; j++){
+        MySignal *tst2=(MySignal*)HitsL2->At(j);
+        cout << "Hit on L2 # " << j << ") z, phi, r = " << tst2->GetZ() << ";\t " << tst2->GetPhi() << ";\t " << tst2->GetR() << ";\t " << endl;
+      }
+    #endif
 
 
     for(int i = 0; i < HitsL2->GetEntries(); i++){ //for cycle on 2nd layer
@@ -197,21 +204,48 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 
     //running window reconstruction
     //sorting the vector of reconstructed z values for the running window
+
+    #if SORTING_DEBUG
+      sfile << "Event #" << ev << endl;
+      sfile << "Multiplicity = " << Vertex->GetMult() << "; #reconstructed z = " << reconstructed_z_values.size() << endl;
+      sfile << "Before sorting" << endl;
+      for(int i = 0; i < (int)(reconstructed_z_values.size()); i++){
+        if(i == 0) sfile << "reconstructed_z_values = {" << reconstructed_z_values[i] << ", ";
+        else if(i < (int)(reconstructed_z_values.size() - 1)) sfile << reconstructed_z_values[i] << ", ";
+        else sfile << reconstructed_z_values[i] << "}" << endl;
+      }
+    #endif
+
     sort(reconstructed_z_values.begin(),reconstructed_z_values.end());  
+
+    #if SORTING_DEBUG
+      sfile << "After sorting" << endl;
+      for(int i = 0; i < (int)(reconstructed_z_values.size()); i++){
+        if(i == 0) sfile << "reconstructed_z_values = {" << reconstructed_z_values[i] << ", ";
+        else if(i < (int)(reconstructed_z_values.size() - 1)) sfile << reconstructed_z_values[i] << ", ";
+        else sfile << reconstructed_z_values[i] << "}" << endl;
+      }
+    #endif
 
 //DA IMPLEMENTARE BENE
     bool reconstructable = 1;
     double reconstructed_vertex = RunningWindow->running_window(reconstructed_z_values,reconstructable);
 
-    cout << "Reconstructed flag set to " << reconstructable << " in the macro" << endl;
+    #if DEBUG
+      cout << "Reconstructed flag set to " << reconstructable << " in the macro" << endl;
+    #endif
 
     if(!reconstructable){
-      cout << "Running window reconstruction not possible (reconstructed_flag set to << " << reconstructable << ") in the macro, doubling the step and size values" << endl;
+      #if DEBUG
+        cout << "Running window reconstruction not possible (reconstructed_flag set to << " << reconstructable << ") in the macro, doubling the step and size values" << endl;
+      #endif
       RunningWindow->SetSize(2.*window_size);
       RunningWindow->SetStep(2.*window_step);
       reconstructed_vertex = RunningWindow->running_window(reconstructed_z_values,reconstructable);
       if(!reconstructable){
-        cout << "!Running window reconstruction still not possible (reconstructed_flag set to << " << reconstructable << ") in the macro!" << endl;
+        #if DEBUG
+          cout << "!Running window reconstruction still not possible (reconstructed_flag set to << " << reconstructable << ") in the macro!" << endl;
+        #endif
       }      
     }
 
@@ -220,7 +254,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
       hResidual->Fill(residual_z*1.e4); //filling the histogram with the residual in micrometers
     }
 
-    cout << "Reconstructed vertex = " << reconstructed_vertex << " cm; Real vertex = " << Vertex->GetZ() << " cm; residual = " << 1.e4*(reconstructed_vertex - Vertex->GetZ()) << " um" << endl;
+//    cout << "Reconstructed vertex = " << reconstructed_vertex << " cm; Real vertex = " << Vertex->GetZ() << " cm; residual = " << 1.e4*(reconstructed_vertex - Vertex->GetZ()) << " um" << endl;
 
     RunningWindow->SetSize(window_size);  //resetting the values of the running window
     RunningWindow->SetStep(window_step);  //resetting the values of the running window
@@ -235,6 +269,10 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   #if LOGGING
     //closing log file
     lfile.close();
+  #endif
+
+  #if SORTING_DEBUG
+    sfile.close();
   #endif
 
 //delete pointers
