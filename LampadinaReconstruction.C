@@ -284,7 +284,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 //delete pointers
   delete Vertex;
   delete Tracklet;
-
+  delete RunningWindow;
 
 //Clock stop and time print
   Clock.Stop();
