@@ -2,11 +2,14 @@
 #include "TBranch.h"
 #include "TCanvas.h"
 #include "TClonesArray.h"
+#include "TF1.h"
 #include "TFile.h"
 #include "TGraph.h"
+#include "TGraphErrors.h"
 #include "TH1D.h"
 #include "TMath.h"
 #include "TStopwatch.h"
+#include "TStyle.h"
 #include "TTree.h"
 
 #include "MyParticle.h"
@@ -58,11 +61,9 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   TClonesArray *HitsL1 = new TClonesArray("MySignal",70);
   TClonesArray *HitsL2 = new TClonesArray("MySignal",70);
  
-  //Declaring histograms
-  TH1D* hResidual = new TH1D("Residual","Residual distribution",200,-1000.,1000.);
-  hResidual->GetXaxis()->SetTitle("Residual [#mum]");
-  hResidual->GetYaxis()->SetTitle("Counts");
-  hResidual->SetLineColor(kBlack);
+  //Declaring vectors to store the reconstructed z values
+  vector<double> reconstructed_z_values;
+
 
   //Opening input file
   TFile infile(input_file);
@@ -88,7 +89,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   int N_mult = Multiplicity_Generation->GetUniqueID();
 
   vector<double> studied_multiplicities; //declared double to be used in the TGraph
-  double std_studied_multiplicities[12] = {3,5,7,9,11,15,20,30,40,50,60,70};
+  double std_studied_multiplicities[12] = {3,5,7,9,11,15,20,30,40,50,60,69};
 
 //Given distribution
   if(N_mult == 0){
@@ -107,6 +108,51 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   }
 
   const int dim_mult = studied_multiplicities.size();
+  //Vectors used to study the resolution
+  //VS MULTIPLICITY
+  vector<double> res_mult(dim_mult,0.);
+  vector<double> res_mult_error(dim_mult,0.);
+  vector<double> multiplicity_error(dim_mult,0.);
+  //VS VERTEX Z
+  vector<double> z_values;
+  vector<double> standard_z_values = {-14., -12., -10., -8., -6., -4., -2., 0., 2., 4. , 6., 8., 10., 12., 14.}; 
+  for(int i = 0; i < 15; i++){
+    z_values.push_back(standard_z_values[i]);
+  }
+  const int dim_z = z_values.size();
+  vector<double> z_error(dim_z,0.);
+  vector<double> res_z(dim_z,0.);
+  vector<double> res_z_error(dim_z,0.);
+//Declaring histograms
+  //residual histogram
+  TH1D* hResidual = new TH1D("Residual","Residual distribution",200,-1000.,1000.);
+  hResidual->GetXaxis()->SetTitle("Residual [#mum]");
+  hResidual->GetYaxis()->SetTitle("Counts");
+  hResidual->SetLineColor(kBlack);
+  //residual histograms for given multiplicities, an array for compactness
+  TH1D* hResidualMult[dim_mult];
+  char name[50];
+  char title[50];
+  //array filling
+  for(int i = 0; i < dim_mult; i++){
+    sprintf(name,"ResidualMult%d",i);
+    sprintf(title,"%f < Multiplicity < %f", studied_multiplicities[i] - .5, studied_multiplicities[i] + .5);
+    hResidualMult[i] = new TH1D(name, title, 400, -1000., 1000.);
+    hResidualMult[i]->GetXaxis()->SetTitle("Residual [#mum]");
+    hResidualMult[i]->GetYaxis()->SetTitle("Counts");
+    hResidualMult[i]->SetLineColor(kBlack);
+  }
+  //residual histograms for given z values
+  TH1D* hResidualZ[dim_z];
+  //array filling
+  for(int i = 0; i < dim_z; i++){
+    sprintf(name,"ResidualZ%d",i);
+    sprintf(title,"%f < Vertex Z < %f", z_values[i] - 0.5, z_values[i] + 0.5);
+    hResidualZ[i] = new TH1D(name, title, 400, -1000., 1000.);
+    hResidualZ[i]->GetXaxis()->SetTitle("Residual [#mum]");
+    hResidualZ[i]->GetYaxis()->SetTitle("Counts");
+    hResidualZ[i]->SetLineColor(kBlack);
+  }
 
   //Reading TTree and branch
   TTree *tree = (TTree*)infile.Get("T");
@@ -125,8 +171,6 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   for(int ev = 0; ev < tree->GetEntries(); ev++){
     tree->GetEvent(ev);
 
-    //Declaring vectors to store the reconstructed z values
-    vector<double> reconstructed_z_values;
 
     if(ev%100000 == 0) cout << "Event #" << ev << endl;
 
@@ -255,21 +299,79 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     if(reconstructable){
       residual_z = Vertex->GetZ() - reconstructed_vertex;
       hResidual->Fill(residual_z*1.e4); //filling the histogram with the residual in micrometers
+      //looping on multiplicity histograms
+      for(int i = 0; i < dim_mult; i++){
+        if(Vertex->GetMult() > studied_multiplicities[i] - .5 && Vertex->GetMult() < studied_multiplicities[i] + .5){
+          hResidualMult[i]->Fill(residual_z*1.e4);
+          break;
+        }
+      }
+      //looping on z histograms
+      for(int i = 0; i < dim_z; i++){
+        if(Vertex->GetZ() > z_values[i] - 1. && Vertex->GetZ() < z_values[i] + 1.){
+          hResidualZ[i]->Fill(residual_z*1.e4);
+          break;
+        }
+      }
     }
 
 //    cout << "Reconstructed vertex = " << reconstructed_vertex << " cm; Real vertex = " << Vertex->GetZ() << " cm; residual = " << 1.e4*(reconstructed_vertex - Vertex->GetZ()) << " um" << endl;
 
+    reconstructed_z_values.clear();   //clearing the vector of reconstructed z values
     RunningWindow->SetSize(window_size);  //resetting the values of the running window
     RunningWindow->SetStep(window_step);  //resetting the values of the running window
 
   }
 
-//TCanvas declaration
-  TCanvas *cResidual = new TCanvas("Residual","Residual",800,600);
-  hResidual->Draw();
+//Fitting the residual histograms for given multiplicities
+  TF1* fResidualMult[dim_mult];
+  for(int i = 0; i < dim_mult; i++){
+    if(hResidualMult[i]->GetEntries() != 0){
+      fResidualMult[i] = new TF1("fResidualMult","gaus",-1000.,1000.);
+      hResidualMult[i]->Fit(fResidualMult[i],"R");
+      //computing the resolution
+      multiplicity_error[i] = .5;
+      res_mult[i] = fResidualMult[i]->GetParameter(2);
+      res_mult_error[i] = fResidualMult[i]->GetParError(2);
+    }
+  }
+  TF1* fResidualZ[dim_z];
+  for(int i = 0; i < dim_z; i++){
+    if(hResidualZ[i]->GetEntries() != 0){
+      fResidualZ[i] = new TF1("fResidualZ","gaus",-1000.,1000.);
+      hResidualZ[i]->Fit(fResidualZ[i],"R");
+      //computing the resolution
+      z_error[i] = 1.;
+      res_z[i] = fResidualZ[i]->GetParameter(2);
+      res_z_error[i] = fResidualZ[i]->GetParError(2);
+    }
+  }
+
+//TCanvas and TGraphErrors declaration
+  TCanvas* cResMult = new TCanvas("cResMult","Resolution vs Multiplicity",800,600);
+  cResMult->cd();
+  TGraphErrors* gResMult = new TGraphErrors(dim_mult,&(studied_multiplicities[0]),&(res_mult[0]),&(multiplicity_error[0]),&(res_mult_error[0]));
+  gResMult->SetTitle("Resolution;Multiplicity;Resolution [#mum]");
+  gResMult->SetMarkerStyle(20);
+  gResMult->SetMarkerSize(1.5);
+  gResMult->SetMarkerColor(kBlack);
+  gResMult->Draw("AP");
+
+  TCanvas* cResZ = new TCanvas("cResZ","Resolution vs Vertex Z",800,600);
+  cResZ->cd();
+  TGraphErrors* gResZ = new TGraphErrors(dim_z,&(z_values[0]),&(res_z[0]),&(z_error[0]),&(res_z_error[0]));
+  gResZ->SetTitle("Resolution;Vertex Z;Resolution [#mum]");
+  gResZ->SetMarkerStyle(20);
+  gResZ->SetMarkerSize(1.5);
+  gResZ->SetMarkerColor(kBlack);
+  gResZ->Draw("AP");
+
 
 //Writing and saving the output file
+  outfile.cd();
   outfile.Write();
+  gResMult->Write("Resolution vs Multiplicity");
+  gResZ->Write("Resolution vs Vertex Z");
   outfile.Close();
 
   #if LOGGING
