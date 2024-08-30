@@ -64,7 +64,6 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   //Declaring vectors to store the reconstructed z values
   vector<double> reconstructed_z_values;
 
-
   //Opening input file
   TFile infile(input_file);
   if(infile.IsZombie()){
@@ -84,9 +83,11 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     ofstream sfile("sorting_debug.txt");
   #endif
 
-  //Reading the multiplicity generation method
+  //Reading the multiplicity/z generation method
   TObject* Multiplicity_Generation = (TObject*)infile.Get("Multiplicity_Generation");
+  TObject* Z_Generation = (TObject*)infile.Get("Z_Generation");
   int N_mult = Multiplicity_Generation->GetUniqueID();
+  int z_gen = Z_Generation->GetUniqueID();
 
   vector<double> studied_multiplicities; //declared double to be used in the TGraph
   double std_studied_multiplicities[12] = {3,5,7,9,11,15,20,30,40,50,60,69};
@@ -108,6 +109,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   }
 
   const int dim_mult = studied_multiplicities.size();
+
   //Vectors used to study the resolution
   //VS MULTIPLICITY
   vector<double> res_mult(dim_mult,0.);
@@ -123,6 +125,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   vector<double> z_error(dim_z,0.);
   vector<double> res_z(dim_z,0.);
   vector<double> res_z_error(dim_z,0.);
+
 //Declaring histograms
   //residual histogram
   TH1D* hResidual = new TH1D("Residual","Residual distribution",200,-1000.,1000.);
@@ -131,8 +134,8 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   hResidual->SetLineColor(kBlack);
   //residual histograms for given multiplicities, an array for compactness
   TH1D* hResidualMult[dim_mult];
-  char name[50];
-  char title[50];
+  char name[100];
+  char title[100];
   //array filling
   for(int i = 0; i < dim_mult; i++){
     sprintf(name,"ResidualMult%d",i);
@@ -164,8 +167,6 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   b1->SetAddress(&Vertex);
   b2->SetAddress(&HitsL1);
   b3->SetAddress(&HitsL2);
-
-
 
   //Loop ont the tree entries
   for(int ev = 0; ev < tree->GetEntries(); ev++){
@@ -321,7 +322,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     RunningWindow->SetSize(window_size);  //resetting the values of the running window
     RunningWindow->SetStep(window_step);  //resetting the values of the running window
 
-  }
+  }//closing for cycle on tree entries
 
 //Fitting the residual histograms for given multiplicities
   TF1* fResidualMult[dim_mult];
@@ -348,7 +349,24 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   }
 
 //TCanvas and TGraphErrors declaration
-  TCanvas* cResMult = new TCanvas("cResMult","Resolution vs Multiplicity",800,600);
+  char canvas_name[100];
+  char canvas_title[100];
+  switch(z_gen){
+    case 1:
+      sprintf(canvas_name,"cResMult - Gaussian");
+      sprintf(canvas_title,"Resolution vs Multiplicity - Gaussian");
+      break;
+    case 2:
+      sprintf(canvas_name,"cResMult - Uniform");
+      sprintf(canvas_title,"Resolution vs Multiplicity - Uniform");
+      break;
+    default:
+      sprintf(canvas_name,"cResMult - Gaussian");
+      sprintf(canvas_title,"Resolution vs Multiplicity - Gaussian");
+      break;
+  }
+
+  TCanvas* cResMult = new TCanvas(canvas_title,canvas_name,800,600);
   cResMult->cd();
   TGraphErrors* gResMult = new TGraphErrors(dim_mult,&(studied_multiplicities[0]),&(res_mult[0]),&(multiplicity_error[0]),&(res_mult_error[0]));
   gResMult->SetTitle("Resolution;Multiplicity;Resolution [#mum]");
@@ -357,7 +375,22 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   gResMult->SetMarkerColor(kBlack);
   gResMult->Draw("AP");
 
-  TCanvas* cResZ = new TCanvas("cResZ","Resolution vs Vertex Z",800,600);
+  switch(z_gen){
+    case 1:
+      sprintf(canvas_name,"cResZ - Gaussian");
+      sprintf(canvas_title,"Resolution vs Vertex Z - Gaussian");
+      break;
+    case 2:
+      sprintf(canvas_name,"cResZ - Uniform");
+      sprintf(canvas_title,"Resolution vs Vertex Z - Uniform");
+      break;
+    default:
+      sprintf(canvas_name,"cResZ - Gaussian");
+      sprintf(canvas_title,"Resolution vs Vertex Z - Gaussian");
+      break;
+  }
+
+  TCanvas* cResZ = new TCanvas(canvas_title,canvas_name,800,600);
   cResZ->cd();
   TGraphErrors* gResZ = new TGraphErrors(dim_z,&(z_values[0]),&(res_z[0]),&(z_error[0]),&(res_z_error[0]));
   gResZ->SetTitle("Resolution;Vertex Z;Resolution [#mum]");
@@ -365,7 +398,6 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   gResZ->SetMarkerSize(1.5);
   gResZ->SetMarkerColor(kBlack);
   gResZ->Draw("AP");
-
 
 //Writing and saving the output file
   outfile.cd();

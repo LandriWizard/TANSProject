@@ -22,10 +22,11 @@ using namespace std;
 
 //IMPORTANT: DISTANCES ARE MEASURED IN CENTIMETRES IN THIS SIMULATION
 //MULTIPLICITY FLAG VALUES: 1 FOR EXTRACTION FROM GIVEN DISTIBUTION, 2 FOR CONSTANT VALUE, 3 FOR UNIFORM DISTRIBUTION
+//ZGEN FLAG VALUES: 1 FOR GAUSS, 2 FOR UNIFORM
 //MULTISCATTERING FLAG VALUES: 0 FOR NO SCATTERING, 1 FOR SCATTERING
 //SMEARING FLAG VALUES: 0 FOR NO SMEARING, 1 FOR SMEARING
 
-void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_flag = 1, int multiscattering_flag = 1, int smearing_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 2, int multiplicity_flag = 1, int multiscattering_flag = 1, int smearing_flag = 1, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -59,8 +60,10 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
   MyPhysics Layer1(4.,27.,multiscattering_angle,smearing_z,smearing_rphi);
   MyPhysics Layer2(7.,27.,multiscattering_angle,smearing_z,smearing_rphi);
 
-//Object used to store the multiplicity generation method, used to differentiate the histograms in the Reconstruction
+//Object used to store the multiplicity/z generation method, used to differentiate the histograms in the Reconstruction
   TObject Multiplicity_Generation;
+  TObject Z_Generation;
+  Z_Generation.SetUniqueID(zgen_flag);
 
   //Functors definition
   //Multiplicity extraction functor
@@ -73,6 +76,7 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
     cout << "Extracting the multiplicity from a given distribution" << endl;
     RndmMult = &MyRandom::RndmMult_FromDistribution;
     dim = 70;
+    Multiplicity_Generation.SetUniqueID(0);
     break;
   case 2:
     cout << "How many particles do you want for each vertex? ";
@@ -138,6 +142,7 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
 //Output file declaration
   TFile outfile(output_file,"RECREATE");
   Multiplicity_Generation.Write("Multiplicity_Generation");
+  Z_Generation.Write("Z_Generation");
 
   TTree* Tree = new TTree("T","Tree with 3 branches");
   TClonesArray* HitsOnL1 = new TClonesArray("MySignal",dim);
@@ -151,8 +156,6 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
 
   Tree->SetAutoSave(0);
 
-
-
   //Events loop
   for(int i = 0; i < N_exp; i++){
 
@@ -161,7 +164,24 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
     //Vertex cohordinates generation
     Vertex->SetX(RndmPtr->Gaus(0.,0.01));
     Vertex->SetY(RndmPtr->Gaus(0.,0.01));
-    Vertex->SetZ(RndmPtr->Gaus(0.,5.3));
+
+    switch(zgen_flag){
+      case 1:
+        if(i == 0)  cout << "Extracting the vertex z from a gaussian distribution" << endl;
+        Vertex->SetZ(RndmPtr->Gaus(0.,5.3));
+        break;
+      case 2:
+        if(i == 0)  cout << "Extracting the vertex z from a uniform distribution" << endl;
+        Vertex->SetZ(RndmPtr->Uniform(-13.5, 13.5));
+        break;
+      default:
+        if(i == 0){
+          cout << "zgen_flag value choice not valid. 1 for gaussian distribution, 2 for uniform distribution" << endl;
+          cout << "Default choice: exctacting the vertex z from the gaussian distribution" << endl;
+        }
+        Vertex->SetZ(RndmPtr->Gaus(0.,5.3));
+        break;
+    }
     //Vertex multiplicity generation
     Vertex->SetMult((RndmPtr->*RndmMult)(N));
 
@@ -253,12 +273,13 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int multiplicity_fla
 
 
           j2++;
+          delete tempSignal2;
 
         }
 
         j1++;
 
-//        delete tempSignal;
+        delete tempSignal1;
 
       }
 
