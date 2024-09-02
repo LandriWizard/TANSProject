@@ -13,6 +13,7 @@
 #include "TStopwatch.h"
 #include "TStyle.h"
 #include "TTree.h"
+#include "TROOT.h"
 
 #include "MyParticle.h"
 #include "MyPhysics.h"
@@ -36,6 +37,8 @@ using std::vector;
 //IMPORTANT: LENGHTS ARE IN CM, ANGLES IN RAD
 
 void Reconstruction(double window_size = 0.35, double window_step = 0.175, const char* input_file = "simulation.root", const char* output_file = "analysis.root"){
+
+  gROOT->SetBatch(kTRUE);
 
 //Stopwatch declaration and start
   TStopwatch Clock;
@@ -72,9 +75,6 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 		cout << "There is no file named " << input_file << " in the chosen directory" << endl;
 		return;
 	}
-
-  //Opening output file
-  TFile outfile(output_file,"RECREATE");
 
   #if LOGGING
     //Opening log file
@@ -382,6 +382,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   gResMult->SetMarkerSize(1.5);
   gResMult->SetMarkerColor(kBlack);
   gResMult->Draw("AP");
+  cResMult->SaveAs("cResMult.pdf");
 
   switch(z_gen){
     case 1:
@@ -406,6 +407,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   gResZ->SetMarkerSize(1.5);
   gResZ->SetMarkerColor(kBlack);
   gResZ->Draw("AP");
+  cResZ->SaveAs("cResZ.pdf");
 
   //Efficiency plots
   TCanvas* cEffMult = new TCanvas("cEffMult","Efficiency vs Multiplicity",80,80,775,500);
@@ -413,7 +415,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   effMult->SetMarkerStyle(33);
   effMult->SetMarkerColor(77);
   effMult->Draw("AP");
-  TEfficiency* effMultClone = (TEfficiency*)effMult->Clone();
+  cEffMult->SaveAs("cEffMult.pdf");
 
   TCanvas* cEffZ = new TCanvas("cEffZ","Efficiency vs Vertex Z",800,600);
   cEffZ->cd();
@@ -424,7 +426,10 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   effZ->GetPaintedGraph()->SetMinimum(0.3);
   effZ->GetPaintedGraph()->SetMaximum(1.1);
   effZ->Draw("AP");
-  TEfficiency* effZClone = (TEfficiency*)effZ->Clone();
+  cEffZ->SaveAs("cEffZ.pdf");
+
+  //Opening output file
+  TFile outfile(output_file,"RECREATE");
 
 //Writing and saving the output file
   outfile.cd();
@@ -434,16 +439,6 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   effMult->Write("Efficiency vs Multiplicity");
   effZ->Write("Efficiency vs Vertex Z");
   outfile.Close();
-
-  TCanvas* cEffMultClone = new TCanvas("cEffMultClone","Efficiency vs Multiplicity",800,600);
-  effMultClone->SetMarkerStyle(33);
-  effMultClone->SetMarkerColor(77);
-  effMultClone->Draw("AP");
-  TCanvas* cEffZClone = new TCanvas("cEffZClone","Efficiency vs Vertex Z",800,600);
-  effZClone->SetMarkerStyle(33);
-  effZClone->SetMarkerColor(77);
-  effZClone->Draw("AP");
-
 
   #if LOGGING
     //closing log file
