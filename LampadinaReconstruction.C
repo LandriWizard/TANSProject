@@ -119,7 +119,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   vector<double> multiplicity_error(dim_mult,0.);
   //VS VERTEX Z
   vector<double> z_values;
-  vector<double> standard_z_values = {-14., -12., -10., -8., -6., -4., -2., 0., 2., 4. , 6., 8., 10., 12., 14.}; 
+  vector<double> standard_z_values = {-14., -12., -10., -8., -6., -4., -2., 0., 2., 4., 6., 8., 10., 12., 14.}; 
   for(int i = 0; i < 15; i++){
     z_values.push_back(standard_z_values[i]);
   }
@@ -130,7 +130,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 
   //Objects to study the efficiency
   TEfficiency* effMult = new TEfficiency("effMult","Efficiency vs Multiplicity;Multiplicity;#epsilon",dim_mult,0.,60.);
-  TEfficiency* effZ = new TEfficiency("effZ","Efficiency vs Vertex Z;Vertex Z;#epsilon",dim_z,-16.,16.);
+  TEfficiency* effZ = new TEfficiency("effZ","Efficiency vs Vertex Z;Vertex Z[cm];#epsilon",dim_z,-16.,16.);
 
 //Declaring histograms
   //residual histogram
@@ -401,7 +401,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   TCanvas* cResZ = new TCanvas(canvas_title,canvas_name,800,600);
   cResZ->cd();
   TGraphErrors* gResZ = new TGraphErrors(dim_z,&(z_values[0]),&(res_z[0]),&(z_error[0]),&(res_z_error[0]));
-  gResZ->SetTitle("Resolution;Vertex Z;Resolution [#mum]");
+  gResZ->SetTitle("Resolution;Vertex Z[cm];Resolution [#mum]");
   gResZ->SetMarkerStyle(20);
   gResZ->SetMarkerSize(1.5);
   gResZ->SetMarkerColor(kBlack);
