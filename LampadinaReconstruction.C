@@ -2,9 +2,11 @@
 #include "TBranch.h"
 #include "TCanvas.h"
 #include "TClonesArray.h"
+#include "TEfficiency.h"
 #include "TF1.h"
 #include "TFile.h"
 #include "TGraph.h"
+#include "TGraphAsymmErrors.h"
 #include "TGraphErrors.h"
 #include "TH1D.h"
 #include "TMath.h"
@@ -126,6 +128,10 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   vector<double> res_z(dim_z,0.);
   vector<double> res_z_error(dim_z,0.);
 
+  //Objects to study the efficiency
+  TEfficiency* effMult = new TEfficiency("effMult","Efficiency vs Multiplicity;Multiplicity;#epsilon",dim_mult,0.,60.);
+  TEfficiency* effZ = new TEfficiency("effZ","Efficiency vs Vertex Z;Vertex Z;#epsilon",dim_z,-16.,16.);
+
 //Declaring histograms
   //residual histogram
   TH1D* hResidual = new TH1D("Residual","Residual distribution",200,-1000.,1000.);
@@ -150,7 +156,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   //array filling
   for(int i = 0; i < dim_z; i++){
     sprintf(name,"ResidualZ%d",i);
-    sprintf(title,"%f < Vertex Z < %f", z_values[i] - 0.5, z_values[i] + 0.5);
+    sprintf(title,"%f < Vertex Z < %f", z_values[i] - 1., z_values[i] + 1.);
     hResidualZ[i] = new TH1D(name, title, 400, -1000., 1000.);
     hResidualZ[i]->GetXaxis()->SetTitle("Residual [#mum]");
     hResidualZ[i]->GetYaxis()->SetTitle("Counts");
@@ -290,12 +296,16 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
       RunningWindow->SetSize(2.*window_size);
       RunningWindow->SetStep(2.*window_step);
       reconstructed_vertex = RunningWindow->running_window(reconstructed_z_values,reconstructable);
-      if(!reconstructable){
-        #if DEBUG
+      #if DEBUG
+        if(!reconstructable){
           cout << "!Running window reconstruction still not possible (reconstructed_flag set to << " << reconstructable << ") in the macro!" << endl;
-        #endif
-      }      
+        }
+      #endif        
     }
+
+    //Filling the efficiency histograms
+    effMult->Fill(reconstructable,Vertex->GetMult());
+    effZ->Fill(reconstructable,Vertex->GetZ());
 
     if(reconstructable){
       residual_z = Vertex->GetZ() - reconstructed_vertex;
@@ -315,8 +325,6 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
         }
       }
     }
-
-//    cout << "Reconstructed vertex = " << reconstructed_vertex << " cm; Real vertex = " << Vertex->GetZ() << " cm; residual = " << 1.e4*(reconstructed_vertex - Vertex->GetZ()) << " um" << endl;
 
     reconstructed_z_values.clear();   //clearing the vector of reconstructed z values
     RunningWindow->SetSize(window_size);  //resetting the values of the running window
@@ -399,12 +407,43 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   gResZ->SetMarkerColor(kBlack);
   gResZ->Draw("AP");
 
+  //Efficiency plots
+  TCanvas* cEffMult = new TCanvas("cEffMult","Efficiency vs Multiplicity",80,80,775,500);
+  cEffMult->cd();
+  effMult->SetMarkerStyle(33);
+  effMult->SetMarkerColor(77);
+  effMult->Draw("AP");
+  TEfficiency* effMultClone = (TEfficiency*)effMult->Clone();
+
+  TCanvas* cEffZ = new TCanvas("cEffZ","Efficiency vs Vertex Z",800,600);
+  cEffZ->cd();
+  effZ->SetMarkerStyle(33);
+  effZ->SetMarkerColor(77);
+  effZ->Draw("AP");
+  cEffZ->Update();
+  effZ->GetPaintedGraph()->SetMinimum(0.3);
+  effZ->GetPaintedGraph()->SetMaximum(1.1);
+  effZ->Draw("AP");
+  TEfficiency* effZClone = (TEfficiency*)effZ->Clone();
+
 //Writing and saving the output file
   outfile.cd();
   outfile.Write();
   gResMult->Write("Resolution vs Multiplicity");
   gResZ->Write("Resolution vs Vertex Z");
+  effMult->Write("Efficiency vs Multiplicity");
+  effZ->Write("Efficiency vs Vertex Z");
   outfile.Close();
+
+  TCanvas* cEffMultClone = new TCanvas("cEffMultClone","Efficiency vs Multiplicity",800,600);
+  effMultClone->SetMarkerStyle(33);
+  effMultClone->SetMarkerColor(77);
+  effMultClone->Draw("AP");
+  TCanvas* cEffZClone = new TCanvas("cEffZClone","Efficiency vs Vertex Z",800,600);
+  effZClone->SetMarkerStyle(33);
+  effZClone->SetMarkerColor(77);
+  effZClone->Draw("AP");
+
 
   #if LOGGING
     //closing log file
