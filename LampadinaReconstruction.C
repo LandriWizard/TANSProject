@@ -410,15 +410,15 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   //Efficiency plots
   TCanvas* cEffMult = new TCanvas("cEffMult","Efficiency vs Multiplicity",80,80,775,500);
   cEffMult->cd();
-  effMult->SetMarkerStyle(33);
-  effMult->SetMarkerColor(77);
+  effMult->SetMarkerStyle(20);
+  effMult->SetMarkerSize(1.5);
   effMult->Draw("AP");
   TEfficiency* effMultClone = (TEfficiency*)effMult->Clone();
 
   TCanvas* cEffZ = new TCanvas("cEffZ","Efficiency vs Vertex Z",800,600);
   cEffZ->cd();
-  effZ->SetMarkerStyle(33);
-  effZ->SetMarkerColor(77);
+  effZ->SetMarkerStyle(20);
+  effZ->SetMarkerSize(1.5);
   effZ->Draw("AP");
   cEffZ->Update();
   effZ->GetPaintedGraph()->SetMinimum(0.3);
@@ -436,12 +436,12 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   outfile.Close();
 
   TCanvas* cEffMultClone = new TCanvas("cEffMultClone","Efficiency vs Multiplicity",800,600);
-  effMultClone->SetMarkerStyle(33);
-  effMultClone->SetMarkerColor(77);
+  effMultClone->SetMarkerStyle(20);
+  effMultClone->SetMarkerSize(1.5);
   effMultClone->Draw("AP");
   TCanvas* cEffZClone = new TCanvas("cEffZClone","Efficiency vs Vertex Z",800,600);
-  effZClone->SetMarkerStyle(33);
-  effZClone->SetMarkerColor(77);
+  effZClone->SetMarkerStyle(20);
+  effZClone->SetMarkerSize(1.5);
   effZClone->Draw("AP");
 
 
@@ -458,6 +458,9 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   delete Vertex;
   delete Tracklet;
   delete RunningWindow;
+
+  delete cEffZ;
+  delete cEffMult;
 
 //Clock stop and time print
   Clock.Stop();
