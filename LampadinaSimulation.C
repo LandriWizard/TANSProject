@@ -27,7 +27,7 @@ using namespace std;
 //SMEARING FLAG VALUES: 0 FOR NO SMEARING, 1 FOR SMEARING
 //N_NOISE IS THE NUMBER OF NOISE HITS TO BE GENERATED
 
-void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, int multiplicity_flag = 1, int multiscattering_flag = 1, int smearing_flag = 1, int N_noise = 1000, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, int multiplicity_flag = 1, int multiscattering_flag = 1, int smearing_flag = 1, int N_noise = 10, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;
@@ -42,6 +42,8 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, i
   double X,Y,Z;
   int mult;
   int noise_count = 0;
+  int layer1_array_position = 0;
+  int layer2_array_position = 0;
 
 //Physic constants
   double multiscattering_angle = 0.0012/TMath::Sqrt(2); //mrad
@@ -285,8 +287,6 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, i
 
       }
 
-
-
       #if DEBUG == TRUE
         cout << "Indeces at the end of the for cycle:" << endl;
         printf("j = %d\n",j);
@@ -300,29 +300,20 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, i
 
     //Noise generation
 
-//    for(int i = 0; i < N_noise; i++){
-//      new(L1Hit[j1]) MySignal(Layer1.GetR(),-(Layer1.GetH())/2. + (RndmPtr->Rndm()) * Layer1.GetH(), RndmPtr->Rndm() * 2. * TMath::Pi(), -(i+1));
-////      cout << "Noise hit number " << i << " generated on layer 1" << endl;
-//      j1++;
-//      new(L2Hit[j2]) MySignal(Layer2.GetR(),-(Layer2.GetH())/2. + (RndmPtr->Rndm()) * Layer2.GetH(), RndmPtr->Rndm() * 2. * TMath::Pi(), -(i+1));
-////      cout << "Noise hit number " << i << " generated on layer 2" << endl;
-//      j2++;
-//    }
-    if(noise_count < N_noise){
+    for(int i = 0; i < N_noise; i++){
       new(L1Hit[j1]) MySignal(Layer1.GetR(),-(Layer1.GetH())/2. + (RndmPtr->Rndm()) * Layer1.GetH(), RndmPtr->Rndm() * 2. * TMath::Pi(), -(i+1));
+//      cout << "Noise hit number " << i << " generated on layer 1" << endl;
       j1++;
       new(L2Hit[j2]) MySignal(Layer2.GetR(),-(Layer2.GetH())/2. + (RndmPtr->Rndm()) * Layer2.GetH(), RndmPtr->Rndm() * 2. * TMath::Pi(), -(i+1));
+//      cout << "Noise hit number " << i << " generated on layer 2" << endl;
       j2++;
-      noise_count++;
     }
-
     Tree->Fill();
 
     HitsOnL1->Clear();
     HitsOnL2->Clear();
 
   }//end of the events loop
-
   cout << "End of the events loop" << endl;
 
 //Writing and saving the output file
