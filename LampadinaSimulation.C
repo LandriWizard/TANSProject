@@ -27,7 +27,7 @@ using namespace std;
 //SMEARING FLAG VALUES: 0 FOR NO SMEARING, 1 FOR SMEARING
 //N_NOISE IS THE NUMBER OF NOISE HITS TO BE GENERATED
 
-void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, int multiplicity_flag = 1, int multiscattering_flag = 1, int smearing_flag = 1, int N_noise = 10, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
+void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, int multiplicity_flag = 1, int multiscattering_flag = 1, int smearing_flag = 1, int N_noise = 0, const char* input_file = "kinem.root", const char* output_file = "simulation.root"){
 
   MyRandom *RndmPtr = new MyRandom(input_file,seed);
   delete gRandom;

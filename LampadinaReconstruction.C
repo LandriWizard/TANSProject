@@ -379,7 +379,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   TGraphErrors* gResMult = new TGraphErrors(dim_mult,&(studied_multiplicities[0]),&(res_mult[0]),&(multiplicity_error[0]),&(res_mult_error[0]));
   gResMult->SetTitle("Resolution;Multiplicity;Resolution [#mum]");
   gResMult->SetMarkerStyle(20);
-  gResMult->SetMarkerSize(1.5);
+  gResMult->SetMarkerSize(0.1);
   gResMult->SetMarkerColor(kBlack);
   gResMult->Draw("AP");
 
@@ -403,7 +403,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   TGraphErrors* gResZ = new TGraphErrors(dim_z,&(z_values[0]),&(res_z[0]),&(z_error[0]),&(res_z_error[0]));
   gResZ->SetTitle("Resolution;Vertex Z[cm];Resolution [#mum]");
   gResZ->SetMarkerStyle(20);
-  gResZ->SetMarkerSize(1.5);
+  gResZ->SetMarkerSize(0.1);
   gResZ->SetMarkerColor(kBlack);
   gResZ->Draw("AP");
 
@@ -411,14 +411,14 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   TCanvas* cEffMult = new TCanvas("cEffMult","Efficiency vs Multiplicity",80,80,775,500);
   cEffMult->cd();
   effMult->SetMarkerStyle(20);
-  effMult->SetMarkerSize(1.5);
+  effMult->SetMarkerSize(0.1);
   effMult->Draw("AP");
   TEfficiency* effMultClone = (TEfficiency*)effMult->Clone();
 
   TCanvas* cEffZ = new TCanvas("cEffZ","Efficiency vs Vertex Z",800,600);
   cEffZ->cd();
   effZ->SetMarkerStyle(20);
-  effZ->SetMarkerSize(1.5);
+  effZ->SetMarkerSize(0.1);
   effZ->Draw("AP");
   cEffZ->Update();
   effZ->GetPaintedGraph()->SetMinimum(0.3);
@@ -437,11 +437,11 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 
   TCanvas* cEffMultClone = new TCanvas("cEffMultClone","Efficiency vs Multiplicity",800,600);
   effMultClone->SetMarkerStyle(20);
-  effMultClone->SetMarkerSize(1.5);
+  effMultClone->SetMarkerSize(0.1);
   effMultClone->Draw("AP");
   TCanvas* cEffZClone = new TCanvas("cEffZClone","Efficiency vs Vertex Z",800,600);
   effZClone->SetMarkerStyle(20);
-  effZClone->SetMarkerSize(1.5);
+  effZClone->SetMarkerSize(0.1);
   effZClone->Draw("AP");
 
 
