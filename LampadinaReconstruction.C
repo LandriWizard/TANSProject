@@ -281,7 +281,6 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
       }
     #endif
 
-//DA IMPLEMENTARE BENE
     bool reconstructable = 1;
     double reconstructed_vertex = RunningWindow->running_window(reconstructed_z_values,reconstructable);
 
