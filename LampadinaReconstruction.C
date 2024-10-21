@@ -214,7 +214,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
         MySignal* InteractionOnLayer1 = (MySignal*)HitsL1->At(j);
 
 
-        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 0.005){
+        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 0.010){
           Tracklet->SetZ1(InteractionOnLayer1->GetZ()); //insertion of Z1 in the tracklet
           reconstructed_z = Tracklet->Intersection();
           reconstructed_z_values.push_back(reconstructed_z);
