@@ -5,10 +5,13 @@
 
 ClassImp(MySignal)
 
-////////////////////////////////////////////////
-// Class containing the signals, i.e. the     //
-// recorded hits used for the reconstruction  //
-////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+// Class containing the signals, i.e. the recorded   //
+// hits used for the reconstruction.                 //
+// MySignals are points defined by their cylidtical  //
+// coordinates (r, z, Phi) and a flag used to        //
+// distinguish between different particles in debug. //
+///////////////////////////////////////////////////////
 
 //___________________________________________________________________________
 MySignal::MySignal(): TObject(),
@@ -42,6 +45,7 @@ MySignal::MySignal(MyPoint* Point, int particle_flag): TObject()
   dmZ = Point->GetZ();
   dmPhi = tmp;
   dmParticleFlag = particle_flag;
+  //Alternative constructor from MyPoint
 }
 
 //___________________________________________________________________________

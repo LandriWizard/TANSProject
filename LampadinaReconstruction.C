@@ -26,14 +26,14 @@
 #define FALSE 0
 #define TRUE 1
 #define PRINT_EVENT FALSE
-#define DEBUG FALSE
-#define LOGGING FALSE
-#define SORTING_DEBUG FALSE
+#define INTERSECTION_DEBUG_LOGGED FALSE
+#define SORTING_DEBUG_LOGGED FALSE
+#define WINDOW_DEBUG FALSE
 
 using namespace std;
 using std::vector;
 
-//IMPORTANT: LENGHTS ARE IN CM, ANGLES IN RAD
+//IMPORTANT: LENGHTS ARE IN CM (IF NOT SPECIFIED), ANGLES IN RAD
 
 void Reconstruction(double window_size = 0.35, double window_step = 0.175, const char* input_file = "simulation.root", const char* output_file = "analysis.root"){
 
@@ -45,11 +45,6 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   double multiscattering_angle = 0.0012;
   double inner_radius = 4.;
   double outer_radius = 7.;
-
-//Not actually used?
-//  double delta_phi = TMath::ASin(3./7.*TMath::Sin(multiscattering_angle)); //I would like to use it in the while loop to "slice" the azimuth angle, cannot because its not a divisor of 2Pi
-//  int slice_number = 2*TMath::Pi()/delta_phi + 1; //number of azimuth angle slices
-//  double real_delta_phi = 2*TMath::Pi()/(double)slice_number; //actual value used to divide the azimuth angle, is a divisor of 2Pi; differs in the order ~10^-8 from delta_phi
 
   double reconstructed_z = 0;;
   double residual_z;
@@ -76,13 +71,13 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   //Opening output file
   TFile outfile(output_file,"RECREATE");
 
-  #if LOGGING
+  #if INTERSECTION_DEBUG_LOGGED
     //Opening log file
     ofstream lfile("reconstruction_log.txt");
   #endif
 
-  #if SORTING_DEBUG
-    ofstream sfile("sorting_debug.txt");
+  #if SORTING_DEBUG_LOGGED
+    ofstream sfile("SORTING_DEBUG_LOGGED.txt");
   #endif
 
   //Reading the multiplicity/z generation method
@@ -181,7 +176,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 
     if(ev%100000 == 0) cout << "Event #" << ev << endl;
 
-    #if LOGGING
+    #if INTERSECTION_DEBUG_LOGGED
       lfile << "\nConsidering event #" << ev << endl;
       int vertex_counter = 0;
     #endif
@@ -207,7 +202,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 
     for(int i = 0; i < HitsL2->GetEntries(); i++){ //for cycle on 2nd layer
 
-      #if LOGGING
+      #if INTERSECTION_DEBUG_LOGGED
         bool signal_vertex_check = 0; //bool to check if we find a vertex for each signal on layer 1
       #endif
 
@@ -219,12 +214,12 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
         MySignal* InteractionOnLayer1 = (MySignal*)HitsL1->At(j);
 
 
-        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 0.005/*6.*real_delta_phi*/){
+        if(TMath::Abs(InteractionOnLayer2->GetPhi() - InteractionOnLayer1->GetPhi()) < 0.005){
           Tracklet->SetZ1(InteractionOnLayer1->GetZ()); //insertion of Z1 in the tracklet
           reconstructed_z = Tracklet->Intersection();
           reconstructed_z_values.push_back(reconstructed_z);
 
-          #if LOGGING
+          #if INTERSECTION_DEBUG_LOGGED
             signal_vertex_check = 1;
             if(signal_vertex_check){
               lfile << "Reconstructed vertex Z = " << reconstructed_z << " thanks to hit #" << j << " on the 1st detector layer and to hit #" 
@@ -240,7 +235,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 
       }//closing for cycle on 1st layer
 
-      #if LOGGING
+      #if INTERSECTION_DEBUG_LOGGED
         if(!signal_vertex_check) lfile << "!! NOT FOUND ANY VERTEX FOR HIT ON LAYER 2 #" << i << endl;
         if(signal_vertex_check){
           lfile << "Real vertex z cohordinate = " << Vertex->GetZ() << endl;
@@ -250,7 +245,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 
     }//closing for cycle on 2nd layer
 
-    #if LOGGING
+    #if INTERSECTION_DEBUG_LOGGED
       lfile << "Number of hits on the 1st layer = " << HitsL1->GetEntries() << endl; 
       lfile << "Number of hits on the 2nd layer = " << HitsL2->GetEntries() << endl;
       lfile << "Found " << vertex_counter << " intersections" << endl;
@@ -259,7 +254,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     //running window reconstruction
     //sorting the vector of reconstructed z values for the running window
 
-    #if SORTING_DEBUG
+    #if SORTING_DEBUG_LOGGED
       sfile << "Event #" << ev << endl;
       sfile << "Multiplicity = " << Vertex->GetMult() << "; #reconstructed z = " << reconstructed_z_values.size() << endl;
       sfile << "Before sorting" << endl;
@@ -272,7 +267,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 
     sort(reconstructed_z_values.begin(),reconstructed_z_values.end());  
 
-    #if SORTING_DEBUG
+    #if SORTING_DEBUG_LOGGED
       sfile << "After sorting" << endl;
       for(int i = 0; i < (int)(reconstructed_z_values.size()); i++){
         if(i == 0) sfile << "reconstructed_z_values = {" << reconstructed_z_values[i] << ", ";
@@ -284,18 +279,18 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     bool reconstructable = 1;
     double reconstructed_vertex = RunningWindow->running_window(reconstructed_z_values,reconstructable);
 
-    #if DEBUG
+    #if WINDOW_DEBUG
       cout << "Reconstructed flag set to " << reconstructable << " in the macro" << endl;
     #endif
 
     if(!reconstructable){
-      #if DEBUG
+      #if WINDOW_DEBUG
         cout << "Running window reconstruction not possible (reconstructed_flag set to << " << reconstructable << ") in the macro, doubling the step and size values" << endl;
       #endif
-      RunningWindow->SetSize(2.*window_size);
-      RunningWindow->SetStep(2.*window_step);
+      RunningWindow->SetSize(2.*window_size); //doubling the size of the running window
+      RunningWindow->SetStep(2.*window_step); //doubling the step of the running window
       reconstructed_vertex = RunningWindow->running_window(reconstructed_z_values,reconstructable);
-      #if DEBUG
+      #if WINDOW_DEBUG
         if(!reconstructable){
           cout << "!Running window reconstruction still not possible (reconstructed_flag set to << " << reconstructable << ") in the macro!" << endl;
         }
@@ -311,13 +306,13 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
       hResidual->Fill(residual_z*1.e4); //filling the histogram with the residual in micrometers
       //looping on multiplicity histograms
       for(int i = 0; i < dim_mult; i++){
-        if(Vertex->GetMult() > studied_multiplicities[i] - .5 && Vertex->GetMult() < studied_multiplicities[i] + .5){
+        if(Vertex->GetMult() > studied_multiplicities[i] - .5 && Vertex->GetMult() < studied_multiplicities[i] + .5){ //filling the right histogram
           hResidualMult[i]->Fill(residual_z*1.e4);
           break;
         }
       }
       //looping on z histograms
-      for(int i = 0; i < dim_z; i++){
+      for(int i = 0; i < dim_z; i++){   //filling the right histogram
         if(Vertex->GetZ() > z_values[i] - 1. && Vertex->GetZ() < z_values[i] + 1.){
           hResidualZ[i]->Fill(residual_z*1.e4);
           break;
@@ -337,7 +332,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     if(hResidualMult[i]->GetEntries() != 0){
       fResidualMult[i] = new TF1("fResidualMult","gaus",-1000.,1000.);
       hResidualMult[i]->Fit(fResidualMult[i],"R");
-      //computing the resolution
+      //extracting the resolution
       multiplicity_error[i] = .5;
       res_mult[i] = fResidualMult[i]->GetParameter(2);
       res_mult_error[i] = fResidualMult[i]->GetParError(2);
@@ -348,7 +343,7 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     if(hResidualZ[i]->GetEntries() != 0){
       fResidualZ[i] = new TF1("fResidualZ","gaus",-1000.,1000.);
       hResidualZ[i]->Fit(fResidualZ[i],"R");
-      //computing the resolution
+      //extracting the resolution
       z_error[i] = 1.;
       res_z[i] = fResidualZ[i]->GetParameter(2);
       res_z_error[i] = fResidualZ[i]->GetParError(2);
@@ -358,25 +353,44 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
 //TCanvas and TGraphErrors declaration
   char canvas_name[100];
   char canvas_title[100];
-  switch(z_gen){
-    case 1:
-      sprintf(canvas_name,"cResMult - Gaussian");
-      sprintf(canvas_title,"Resolution vs Multiplicity - Gaussian");
-      break;
-    case 2:
-      sprintf(canvas_name,"cResMult - Uniform");
-      sprintf(canvas_title,"Resolution vs Multiplicity - Uniform");
-      break;
-    default:
-      sprintf(canvas_name,"cResMult - Gaussian");
-      sprintf(canvas_title,"Resolution vs Multiplicity - Gaussian");
-      break;
+  char graph_title[100];
+  if(N_mult == 0){ //given distribution
+    sprintf(canvas_name,"cResMult - Given");
+    sprintf(canvas_title,"Resolution vs Multiplicity - Given");
+    sprintf(graph_title,"Resolution vs Multiplicity - Given;Multiplicity;Resolution [#mum]");
   }
+  else if(N_mult > 0){ //constant value
+    sprintf(canvas_name,"cResMult - Constant");
+    sprintf(canvas_title,"Resolution vs Multiplicity - Constant");
+    sprintf(graph_title,"Resolution vs Multiplicity - Constant;Multiplicity;Resolution [#mum]");
+  }
+  else{ //uniform distribution
+    sprintf(canvas_name,"cResMult - Uniform");
+    sprintf(canvas_title,"Resolution vs Multiplicity - Uniform");
+    sprintf(graph_title,"Resolution vs Multiplicity - Uniform;Multiplicity;Resolution [#mum]");
+  }
+//  switch(z_gen){
+//    case 1:
+//      sprintf(canvas_name,"cResMult - Gaussian");
+//      sprintf(canvas_title,"Resolution vs Multiplicity - Gaussian");
+//      sprintf(graph_title,"Resolution vs Multiplicity - Gaussian;Multiplicity;Resolution [#mum]");
+//      break;
+//    case 2:
+//      sprintf(canvas_name,"cResMult - Uniform");
+//      sprintf(canvas_title,"Resolution vs Multiplicity - Uniform");
+//      sprintf(graph_title,"Resolution vs Multiplicity - Uniform;Multiplicity;Resolution [#mum]");
+//      break;
+//    default:
+//      sprintf(canvas_name,"cResMult - Gaussian");
+//      sprintf(canvas_title,"Resolution vs Multiplicity - Gaussian");
+//      sprintf(graph_title,"Resolution vs Multiplicity - Gaussian;Multiplicity;Resolution [#mum]");
+//      break;
+//  }
 
   TCanvas* cResMult = new TCanvas(canvas_title,canvas_name,800,600);
   cResMult->cd();
   TGraphErrors* gResMult = new TGraphErrors(dim_mult,&(studied_multiplicities[0]),&(res_mult[0]),&(multiplicity_error[0]),&(res_mult_error[0]));
-  gResMult->SetTitle("Resolution;Multiplicity;Resolution [#mum]");
+  gResMult->SetTitle(graph_title);
   gResMult->SetMarkerStyle(20);
   gResMult->SetMarkerSize(0.1);
   gResMult->SetMarkerColor(kBlack);
@@ -386,21 +400,24 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     case 1:
       sprintf(canvas_name,"cResZ - Gaussian");
       sprintf(canvas_title,"Resolution vs Vertex Z - Gaussian");
+      sprintf(graph_title,"Resolution vs Vertex Z - Gaussian;Vertex Z[cm];Resolution [#mum]");
       break;
     case 2:
       sprintf(canvas_name,"cResZ - Uniform");
       sprintf(canvas_title,"Resolution vs Vertex Z - Uniform");
+      sprintf(graph_title,"Resolution vs Vertex Z - Uniform;Vertex Z[cm];Resolution [#mum]");
       break;
     default:
       sprintf(canvas_name,"cResZ - Gaussian");
       sprintf(canvas_title,"Resolution vs Vertex Z - Gaussian");
+      sprintf(graph_title,"Resolution vs Vertex Z - Gaussian;Vertex Z[cm];Resolution [#mum]");
       break;
   }
 
   TCanvas* cResZ = new TCanvas(canvas_title,canvas_name,800,600);
   cResZ->cd();
   TGraphErrors* gResZ = new TGraphErrors(dim_z,&(z_values[0]),&(res_z[0]),&(z_error[0]),&(res_z_error[0]));
-  gResZ->SetTitle("Resolution;Vertex Z[cm];Resolution [#mum]");
+  gResZ->SetTitle(graph_title);
   gResZ->SetMarkerStyle(20);
   gResZ->SetMarkerSize(0.1);
   gResZ->SetMarkerColor(kBlack);
@@ -444,12 +461,12 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
   effZClone->Draw("AP");
 
 
-  #if LOGGING
+  #if INTERSECTION_DEBUG_LOGGED
     //closing log file
     lfile.close();
   #endif
 
-  #if SORTING_DEBUG
+  #if SORTING_DEBUG_LOGGED
     sfile.close();
   #endif
 

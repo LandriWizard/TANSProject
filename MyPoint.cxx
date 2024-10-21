@@ -2,9 +2,13 @@
 #include "TMath.h"
 #include "MyPoint.h"
 
-
-
 ClassImp(MyPoint)
+
+//////////////////////////////
+// Class containing the     //
+// points i.e. triplets     //
+// of cartesion coordinates //
+//////////////////////////////
 
 //________________________________________________________________________
 MyPoint::MyPoint():TObject(),

@@ -17,6 +17,8 @@
 #define FALSE 0
 #define DEBUG FALSE
 #define MULTISCATTERING_DEBUG FALSE
+#define INDEX_DEBUG FALSE
+#define NOISE_DEBUG FALSE
 
 using namespace std;
 
@@ -53,10 +55,6 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, i
 //Auxialiary objects
   MyPoint* Point = new MyPoint();
   MyVertex* Vertex = new MyVertex();
-
-  //Generatori di vertice, inizio con la generazione di un vertice con molteplicità estratta da kinem.root
-  //Ancora da inserire: molteplicità fissa e estratta da distribuzione uniforme
-
   MyPoint* Hit = new MyPoint(); //Points used to store the true position of where the particles hit the detectors
   MyParticle* Particle = new MyParticle(); //The particle that will be transported, contains the theta and phi of the trajectory
 
@@ -202,7 +200,7 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, i
     int j1 = 0, j2 = 0; //Indices used to save hits when the z is actually on the detector
     for(int j = 0; j < mult; j++){
 
-      #if DEBUG == TRUE
+      #if INDEX_DEBUG == TRUE
         cout << "Indeces at the beginning of the for cycle:" << endl;
         printf("j = %d\n",j);
         printf("j1 = %d\n",j1);
@@ -287,7 +285,7 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, i
 
       }
 
-      #if DEBUG == TRUE
+      #if INDEX_DEBUG == TRUE
         cout << "Indeces at the end of the for cycle:" << endl;
         printf("j = %d\n",j);
         printf("j1 = %d\n",j1);
@@ -301,11 +299,27 @@ void Simulation(int N_exp = 1e6, unsigned int seed = 69420, int zgen_flag = 1, i
     //Noise generation
 
     for(int i = 0; i < N_noise; i++){
-      new(L1Hit[j1]) MySignal(Layer1.GetR(),-(Layer1.GetH())/2. + (RndmPtr->Rndm()) * Layer1.GetH(), RndmPtr->Rndm() * 2. * TMath::Pi(), -(i+1));
-//      cout << "Noise hit number " << i << " generated on layer 1" << endl;
+      double radius = Layer1.GetR();
+      double z = -(Layer1.GetH())/2. + (RndmPtr->Rndm()) * Layer1.GetH();
+      double phi = RndmPtr->Rndm() * 2. * TMath::Pi();
+      new(L1Hit[j1]) MySignal(radius, z, phi, -(i+1));
+      #if NOISE_DEBUG == TRUE
+        cout << "Noise hit number " << i << " generated on layer 1" << endl;
+        cout << "Generated noise hit position on layer 1 r, z, phi = (" << radius << ", " <<
+                                                                                z << ", " <<
+                                                                                phi << ");" << endl;
+      #endif
       j1++;
-      new(L2Hit[j2]) MySignal(Layer2.GetR(),-(Layer2.GetH())/2. + (RndmPtr->Rndm()) * Layer2.GetH(), RndmPtr->Rndm() * 2. * TMath::Pi(), -(i+1));
-//      cout << "Noise hit number " << i << " generated on layer 2" << endl;
+      radius = Layer2.GetR();
+      z = -(Layer2.GetH())/2. + (RndmPtr->Rndm()) * Layer2.GetH();
+      phi = RndmPtr->Rndm() * 2. * TMath::Pi();
+      new(L2Hit[j2]) MySignal(radius, z, phi, -(i+1));
+      #if NOISE_DEBUG == TRUE
+        cout << "Noise hit number " << i << " generated on layer 2" << endl;
+        cout << "Generated noise hit position on layer 2 = (" << radius << ", " <<
+                                                                      z << ", " <<
+                                                                      phi << ");" << endl;
+      #endif
       j2++;
     }
     Tree->Fill();

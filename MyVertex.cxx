@@ -4,9 +4,10 @@
 
 
 ClassImp(MyVertex)
-///////////////////////////////////////////
-//  Class containing any kind of vertex  //
-///////////////////////////////////////////
+/////////////////////////////////////
+//  Class containing vertices i.e. //
+//  points with multiplicity       //
+/////////////////////////////////////
 
 
 //________________________________________________________________________
@@ -20,7 +21,13 @@ MyVertex::MyVertex():MyPoint(),
 MyVertex::MyVertex(MyPoint* Point, int mult):MyPoint(),
  dmMult(mult){
 	//standard constructor 
-}	     
+}
+
+//___________________________________________________________________________
+MyVertex::MyVertex(double X, double Y, double Z, int mult):MyPoint(X,Y,Z),
+  dmMult(mult){
+  //alternative constructor
+}
 
 //___________________________________________________________________________
 MyVertex::MyVertex(const MyVertex& source):MyPoint(source)

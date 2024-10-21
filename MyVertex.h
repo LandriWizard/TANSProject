@@ -11,7 +11,7 @@ class MyVertex : public MyPoint
   
     MyVertex();
     MyVertex(MyPoint* Point, int mult);
-//Inserisco MyVertex(double X, double Y, double Z, int mult);   ??
+    MyVertex(double X, double Y, double Z, int mult);
     MyVertex(const MyVertex& source);
     virtual ~MyVertex();
     MyVertex& operator=(const MyVertex& source);		

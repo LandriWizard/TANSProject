@@ -32,6 +32,7 @@ MyTracklet::MyTracklet(MySignal* InnerSignal, MySignal* OuterSignal){
   dmR2 = OuterSignal->GetR();
   dmZ1 = InnerSignal->GetZ();
   dmZ2 = OuterSignal->GetZ();
+  //Alternative constructor using MySignal objects
 }
 
 

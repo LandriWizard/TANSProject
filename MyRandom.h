@@ -8,9 +8,6 @@
 #include "MyVertex.h"
 
 class MyRandom : public TRandom3 {
-//////////////////////////////////////////
-//  Class for random number generators  //
-//////////////////////////////////////////
 
   public:
     MyRandom();

@@ -5,6 +5,14 @@
 
 ClassImp(MyParticle)
 
+///////////////////////////////////////////////////
+// Class containing the "particles" i.e. objects //
+// defined by a couple of angles theta, phi that //
+// are the direction of the trajectory of the    //
+// particle.                                     //
+///////////////////////////////////////////////////
+
+
 //________________________________________________________________________
 MyParticle::MyParticle():TObject(),
   dmTheta(0.),

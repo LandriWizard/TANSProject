@@ -90,9 +90,8 @@ MyParticle MyPhysics::MultipleScattering(MyParticle* Particle){
     double theta = Particle->GetTheta();
     double phi = Particle->GetPhi();
 
-//    double thetaP = TMath::Abs(gRandom->Gaus(0.,dmScatteringTheta));
     double thetaP = 0.;
-    do {thetaP = gRandom -> Gaus(0.,dmScatteringTheta);} while(thetaP<0.); //vogliamo theta >=0 (il Do serve per farlo eseguire almeno una volta)
+    do {thetaP = gRandom -> Gaus(0.,dmScatteringTheta);} while(thetaP<0.); //wanted >=0 (Do is needed to make this iteration happen at least once)
     double phiP = gRandom->Uniform(0.,2.*TMath::Pi());
 
     double rotation_matrix[3][3];
@@ -106,35 +105,24 @@ MyParticle MyPhysics::MultipleScattering(MyParticle* Particle){
     rotation_matrix[1][2] = TMath::Sin(phi)*TMath::Sin(theta);
     rotation_matrix[2][2] = TMath::Cos(theta);
 
-//    for(int i = 0; i < 3; i++){
-//      for(int j = 0; j < 3; j++){
-//        std::cout << "rotation_matrix[" << i << "][" << j << "] = " << rotation_matrix[i][j] << std::endl;
-//      }
-//    }
-
     double cdp[3]; //director cosines in the primed reference system
     cdp[0] = TMath::Cos(phiP)*TMath::Sin(thetaP);
     cdp[1] = TMath::Sin(phiP)*TMath::Sin(thetaP);
     cdp[2] = TMath::Cos(thetaP);
 
     double temp_cd[3];
-    for(int i = 0; i < 3; i++){
+    for(int i = 0; i < 3; i++){  //matrix multiplication
       temp_cd[i] = 0.;
       for(int j = 0; j < 3; j++){
         temp_cd[i] += rotation_matrix[i][j]*cdp[j];
-//        std::cout << "temp_cd[" << i << "] = " << temp_cd[i] << std::endl;
       }
     }
 
     double scattered_theta = TMath::ACos(temp_cd[2]);
     double scattered_phi;
 
-    if(temp_cd[1] >= 0.) scattered_phi = TMath::ACos((temp_cd[0])/TMath::Sin(scattered_theta)); 
-    else scattered_phi = 2.*TMath::Pi() - TMath::ACos((temp_cd[0])/TMath::Sin(scattered_theta));
-
-//    std::cout << "scattered_theta = " << scattered_theta << std::endl;  
-//    std::cout << "scattered_phi = " << scattered_phi << std::endl;  
-
+    if(temp_cd[1] >= 0.) scattered_phi = TMath::ACos((temp_cd[0])/TMath::Sin(scattered_theta)); //positive y
+    else scattered_phi = 2.*TMath::Pi() - TMath::ACos((temp_cd[0])/TMath::Sin(scattered_theta));  //negative y
 
     return MyParticle(scattered_theta,scattered_phi);
 }
@@ -145,8 +133,8 @@ MySignal MyPhysics::SmearingOn(MySignal* Signal){
   double r = Signal->GetR();
   double z_rec = Signal->GetZ() + gRandom->Gaus(0.,dmSmearingZ);
   double phi_rec = Signal->GetPhi() + gRandom->Gaus(0.,dmSmearingRPhi)/r;
-  if(phi_rec < 0.) phi_rec += 2.*TMath::Pi();
-  else if(phi_rec > 2.*TMath::Pi()) phi_rec -= 2.*TMath::Pi();
+  if(phi_rec < 0.) phi_rec += 2.*TMath::Pi(); //to make phi stay in the range [0,2pi]
+  else if(phi_rec > 2.*TMath::Pi()) phi_rec -= 2.*TMath::Pi();  //to make phi stay in the range [0,2pi]
 
   return MySignal(r,z_rec,phi_rec,flag);
 }
