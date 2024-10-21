@@ -369,23 +369,6 @@ void Reconstruction(double window_size = 0.35, double window_step = 0.175, const
     sprintf(canvas_title,"Resolution vs Multiplicity - Uniform");
     sprintf(graph_title,"Resolution vs Multiplicity - Uniform;Multiplicity;Resolution [#mum]");
   }
-//  switch(z_gen){
-//    case 1:
-//      sprintf(canvas_name,"cResMult - Gaussian");
-//      sprintf(canvas_title,"Resolution vs Multiplicity - Gaussian");
-//      sprintf(graph_title,"Resolution vs Multiplicity - Gaussian;Multiplicity;Resolution [#mum]");
-//      break;
-//    case 2:
-//      sprintf(canvas_name,"cResMult - Uniform");
-//      sprintf(canvas_title,"Resolution vs Multiplicity - Uniform");
-//      sprintf(graph_title,"Resolution vs Multiplicity - Uniform;Multiplicity;Resolution [#mum]");
-//      break;
-//    default:
-//      sprintf(canvas_name,"cResMult - Gaussian");
-//      sprintf(canvas_title,"Resolution vs Multiplicity - Gaussian");
-//      sprintf(graph_title,"Resolution vs Multiplicity - Gaussian;Multiplicity;Resolution [#mum]");
-//      break;
-//  }
 
   TCanvas* cResMult = new TCanvas(canvas_title,canvas_name,800,600);
   cResMult->cd();
